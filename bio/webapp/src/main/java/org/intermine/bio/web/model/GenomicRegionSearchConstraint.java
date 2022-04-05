@@ -22,6 +22,7 @@ import java.util.Set;
 public class GenomicRegionSearchConstraint
 {
     private String orgName = null;
+    private String chrAssembly = null;
     private Set<Class<?>> featureTypes = null;
     private List<GenomicRegion> genomicRegionList = null;
     private int extendedRegionSize = 0;
@@ -44,6 +45,18 @@ public class GenomicRegionSearchConstraint
     }
 
     /**
+     * @return the chrAssembly
+     */
+    public String getChrAssembly() {
+        return chrAssembly;
+    }
+    /**
+     * @param orgName the chrAssembly to set
+     */
+     public void setChrAssembly(String chrAssembly) {
+        this.chrAssembly = chrAssembly;
+    }
+    /**
      * @return the feature types to search for
      */
     public Set<Class<?>> getFeatureTypes() {
@@ -55,7 +68,6 @@ public class GenomicRegionSearchConstraint
     public void setFeatureTypes(Set<Class<?>> featureTypes) {
         this.featureTypes = featureTypes;
     }
-
     /**
      * @return the genomicRegionList
      */
@@ -104,11 +116,15 @@ public class GenomicRegionSearchConstraint
     public boolean equals(Object obj) {
         if (obj instanceof GenomicRegionSearchConstraint) {
             GenomicRegionSearchConstraint c = (GenomicRegionSearchConstraint) obj;
-            return (extendedRegionSize == c.getExtendedRegionSize()
+            boolean retVal = (extendedRegionSize == c.getExtendedRegionSize()
                     && genomicRegionList.equals(c.getGenomicRegionList())
                     && featureTypes.equals(c.getFeatureTypes())
                     && orgName.equals(c.getOrgName())
                     && strandSpecific == c.getStrandSpecific());
+            if (chrAssembly != null && c.getChrAssembly() != null) {
+                retVal = retVal && chrAssembly.equals(c.getChrAssembly());
+            }
+            return retVal;
         }
         return false;
     }
@@ -118,8 +134,11 @@ public class GenomicRegionSearchConstraint
      */
     @Override
     public int hashCode() {
-        return extendedRegionSize + genomicRegionList.hashCode() + featureTypes.hashCode()
+        int retVal = extendedRegionSize + genomicRegionList.hashCode() + featureTypes.hashCode()
             + orgName.hashCode();
+        if (chrAssembly != null) {
+            retVal += chrAssembly.hashCode();
+        }
+        return retVal;
     }
-
 }

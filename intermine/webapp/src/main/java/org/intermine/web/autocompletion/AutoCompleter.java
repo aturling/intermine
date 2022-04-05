@@ -86,7 +86,6 @@ public class AutoCompleter
      * @return string array with search results and an error flag at position 0
      */
     public String[] getFastList(String query, String field, String className,  int n) {
-
         String status = "true";
         String[] stringResults = null;
 
@@ -133,8 +132,10 @@ public class AutoCompleter
                     try {
                         SolrDocument document = results.get(i - 1);
 
-                        stringResults[i] = ((ArrayList<String>) document
-                                .getFieldValue(field)).get(0);
+                        //stringResults[i] = ((ArrayList<String>) document
+                        //        .getFieldValue(field)).get(0);
+                        // document.getFieldValue(field) is a String, can't convert to ArrayList
+                        stringResults[i] = document.getFieldValue(field).toString();
 
                     } catch (Exception e) {
                         status = "No results! Please try again.";

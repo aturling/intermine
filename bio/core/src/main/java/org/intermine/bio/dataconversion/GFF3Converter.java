@@ -51,7 +51,7 @@ public class GFF3Converter extends DataConverter
 {
     private static final Logger LOG = Logger.getLogger(GFF3Converter.class);
     private Reference orgRef;
-    private String seqClsName, orgTaxonId;
+    private String seqClsName, seqAssemblyVersion, orgTaxonId;
     private Item organism, dataSet, dataSource;
     private Model tgtModel;
     private Map<String, Item> seqs = new HashMap<String, Item>();
@@ -63,6 +63,7 @@ public class GFF3Converter extends DataConverter
     private GFF3RecordHandler handler;
     private GFF3SeqHandler sequenceHandler;
     private boolean dontCreateLocations;
+    private boolean loadDuplicateEntities = false;
     private final Map<String, Item> dataSets = new HashMap<String, Item>();
     private final Map<String, Item> dataSources = new HashMap<String, Item>();
 
@@ -79,6 +80,7 @@ public class GFF3Converter extends DataConverter
      * @param writer ItemWriter
      * @param seqClsName The class of the coordinate system for this GFF3 file (generally
      * Chromosome)
+     * @param seqAssemblyVersion The assembly version (if class=Chromosome)
      * @param orgTaxonId The taxon ID of the organism we are loading
      * @param dataSourceName name for dataSource
      * @param dataSetTitle title for dataSet
@@ -88,12 +90,13 @@ public class GFF3Converter extends DataConverter
      * @param licence URL to the licence for this data set
      * @throws ObjectStoreException if something goes wrong
      */
-    public GFF3Converter(ItemWriter writer, String seqClsName, String orgTaxonId,
-            String dataSourceName, String dataSetTitle, Model tgtModel,
+    public GFF3Converter(ItemWriter writer, String seqClsName, String seqAssemblyVersion,
+            String orgTaxonId, String dataSourceName, String dataSetTitle, Model tgtModel,
             GFF3RecordHandler handler, GFF3SeqHandler sequenceHandler, String licence)
             throws ObjectStoreException {
         super(writer, tgtModel);
         this.seqClsName = seqClsName;
+        this.seqAssemblyVersion = seqAssemblyVersion;
         this.orgTaxonId = orgTaxonId;
         this.tgtModel = tgtModel;
         this.handler = handler;
@@ -114,6 +117,15 @@ public class GFF3Converter extends DataConverter
         handler.setIdentifierMap(identifierMap);
         handler.setOrganism(organism);
         readConfig();
+    }
+
+    // Constructor without assemblyVersion (for generic GFFs)
+    public GFF3Converter(ItemWriter writer, String seqClsName, String orgTaxonId,
+            String dataSourceName, String dataSetTitle, Model tgtModel,
+            GFF3RecordHandler handler, GFF3SeqHandler sequenceHandler, String licence)
+            throws ObjectStoreException {
+        this(writer, seqClsName, "", orgTaxonId, dataSourceName, dataSetTitle, tgtModel,
+                handler, sequenceHandler, licence);
     }
 
     // default is gff_config.properties, but can be overridden by a property file for the
@@ -709,6 +721,14 @@ public class GFF3Converter extends DataConverter
     }
 
     /**
+     * Return the sequence assembly version that was passed to the constructor.
+     * @return the assembly version
+     */
+    public String getSeqAssemblyVersion() {
+        return seqAssemblyVersion;
+    }
+
+    /**
      * Return the
      * @return the target Model
      */
@@ -752,6 +772,9 @@ public class GFF3Converter extends DataConverter
             // sequence handler may choose not to create sequence
             if (seq != null) {
                 seq.addReference(getOrgRef());
+                if ("Chromosome".equals(seqClsName)) {
+                    seq.setAttribute("assembly", seqAssemblyVersion);
+                }
                 store(seq);
                 seqs.put(identifier, seq);
             }
@@ -767,6 +790,23 @@ public class GFF3Converter extends DataConverter
      */
     public void setDontCreateLocations(boolean dontCreateLocations) {
         this.dontCreateLocations = dontCreateLocations;
+    }
+
+    /**
+     * Set the loadDuplicateEntities flag
+     * @param loadDuplicateEntities if true, create duplicate entities for genes while processing
+     */
+    public void setLoadDuplicateEntities(boolean loadDuplicateEntities) {
+        System.out.println("Setting loadDuplicateEntities to " + loadDuplicateEntities);
+        this.loadDuplicateEntities = loadDuplicateEntities;
+    }
+
+    /**
+     * Return the value of loadDuplicateEntities flag
+     * @return boolean loadDuplicateEntities flag
+     */
+    public boolean getLoadDuplicateEntities() {
+        return this.loadDuplicateEntities;
     }
 
     /**

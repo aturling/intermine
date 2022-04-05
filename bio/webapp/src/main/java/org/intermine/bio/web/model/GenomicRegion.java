@@ -26,7 +26,8 @@ public class GenomicRegion implements Comparable<GenomicRegion>
     private Integer extendedStart;
     private Integer extendedEnd;
 
-    private Boolean minusStrand;    // for strand-specific matching
+    private Boolean minusStrand;       // for strand-specific matching
+    private String chrAssembly = null; // if filtering by assembly version
 
     //user identifier to tag the order of input e.g. X:7880589..7880644:5 is the 5th input
     private Integer tag = null;
@@ -66,6 +67,20 @@ public class GenomicRegion implements Comparable<GenomicRegion>
      */
     public void setChr(String chr) {
         this.chr = chr;
+    }
+
+    /**
+     * @return chrAssembly
+     */
+    public String getChrAssembly() {
+        return chrAssembly;
+    }
+
+    /**
+     * @param chrAssembly chromosome assembly
+     */
+    public void setChrAssembly(String chrAssembly) {
+        this.chrAssembly = chrAssembly;
     }
 
     /**
@@ -215,12 +230,16 @@ public class GenomicRegion implements Comparable<GenomicRegion>
                         && start.equals(gr.getStart())
                         && end.equals(gr.getEnd()));
             } else {                                               // for full version
-                return (chr.equals(gr.getChr())
+                boolean regionsEqual = (chr.equals(gr.getChr())
                         && start.equals(gr.getStart())
                         && end.equals(gr.getEnd())
                         && organism.equals(gr.getOrganism())
                         && extendedRegionSize.equals(gr.getExtendedRegionSize())
                         && tag == gr.getTag());
+                if (chrAssembly != null && gr.getChrAssembly() != null) {
+                    regionsEqual = (regionsEqual && (chrAssembly.equals(gr.getChrAssembly())));
+                }
+                return regionsEqual;
             }
         }
         return false;
@@ -243,11 +262,15 @@ public class GenomicRegion implements Comparable<GenomicRegion>
                 + start.hashCode()
                 + end.hashCode();
         } else {                 // for full version
-            return chr.hashCode()
+            int retVal = chr.hashCode()
                 + start.hashCode()
                 + end.hashCode()
                 + organism.hashCode()
                 + extendedRegionSize.hashCode();
+             if (chrAssembly != null) {
+                 retVal += chrAssembly.hashCode();
+             }
+             return retVal;
         }
     }
 
