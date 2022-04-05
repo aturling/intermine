@@ -35,6 +35,7 @@ import org.intermine.bio.web.biojava.BioSequenceFactory.SequenceType;
 import org.intermine.bio.web.export.ResidueFieldExporter;
 import org.intermine.model.InterMineObject;
 import org.intermine.model.bio.BioEntity;
+import org.intermine.model.bio.Polypeptide;
 import org.intermine.model.bio.Protein;
 import org.intermine.model.bio.Sequence;
 import org.intermine.model.bio.SequenceFeature;
@@ -92,7 +93,7 @@ public class SequenceExportAction extends InterMineAction
                 FastaWriterHelper.writeSequence(out, bioSequence);
             } else {
                 PrintWriter out = response.getWriter();
-                out.write("Sequence information not availble for this sequence feature...");
+                out.write("Sequence information not available for this sequence feature...");
                 out.flush();
             }
         }
@@ -104,7 +105,15 @@ public class SequenceExportAction extends InterMineAction
         throws IllegalAccessException, CompoundNotFoundException {
         BioSequence bioSequence;
         BioEntity bioEntity = (BioEntity) obj;
-        bioSequence = BioSequenceFactory.make(bioEntity, SequenceType.DNA);
+        if (bioEntity instanceof Polypeptide) {
+            // BioSequenceFactory doesn't know about Polypeptide, tell it to use
+            // SequenceType=Protein
+            bioSequence = BioSequenceFactory.make(bioEntity, SequenceType.PROTEIN);
+        }
+        else {
+            // Otherwise do the usual thing
+            bioSequence = BioSequenceFactory.make(bioEntity, SequenceType.DNA);
+        }
         if (bioSequence == null) {
             return null;
         }

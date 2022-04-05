@@ -13,6 +13,7 @@ package org.intermine.bio.web.model;
 /**
  *
  * @author Fenyuan
+ * @author
  */
 public class GeneModelSettings
 {
@@ -23,7 +24,7 @@ public class GeneModelSettings
     boolean hasFivePrimeUTRs = true;
     boolean hasExons = true;
     boolean hasIntrons = true;
-    boolean hasCDSs = true;
+    boolean hasCodingSequences = true;
 
     /**
      * @param organism organism
@@ -85,8 +86,8 @@ public class GeneModelSettings
     /**
      * @return true if has CDS
      */
-    public boolean getHasCDSs() {
-        return hasCDSs;
+    public boolean getHasCodingSequences() {
+        return hasCodingSequences;
     }
 
 }

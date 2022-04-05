@@ -27,9 +27,10 @@ import org.intermine.util.DynamicUtil;
 
 /**
  * Representation of a gene model - being one transcript of a gene and including exons, introns,
- * UTRs and CDSs where data are available.  On construction for a particular transcript this will
- * fetch additional information from the database.
+ * UTRs and CodingSequences where data are available.  On construction for a particular transcript this
+ * will fetch additional information from the database.
  * @author Richard Smith
+ * @author
  *
  */
 public class GeneModel
@@ -44,7 +45,7 @@ public class GeneModel
     List<InterMineObject> cdss;
     Set<Integer> ids = null;
 
-    private static String[] types = new String[] {"Gene", "Transcript", "Exon", "UTR", "CDS"};
+    private static String[] types = new String[] {"Gene", "Transcript", "Exon", "UTR", "CodingSequence"};
     /**
      * The unqualified class names of types that comprise a gene model.
      */
@@ -104,18 +105,22 @@ public class GeneModel
             }
         }
 
-        if (fieldExists("Transcript", "CDSs")) {
+        if (fieldExists("Transcript", "codingSequences")) {
             cdss = new ArrayList<InterMineObject>();
             try {
                 Collection<InterMineObject> transcriptCdss =
-                    (Collection<InterMineObject>) transcript.getFieldValue("CDSs");
+                    (Collection<InterMineObject>) transcript.getFieldValue("codingSequences");
+                LOG.info("codingSequences:");
+                LOG.info(transcriptCdss);
                 for (InterMineObject cds : transcriptCdss) {
+                    LOG.info("Coding Sequence:");
+                    LOG.info(cds);
                     cdss.add(cds);
                 }
             } catch (IllegalAccessException e) {
-                LOG.warn("Failed to fetch CDSs for transcript: " + transcript.getId());
+                LOG.warn("Failed to fetch CodingSequences for transcript: " + transcript.getId());
             }
-        }
+        } else { LOG.warn("Field does not exist: codingSequences"); }
 
         if (fieldExists("Transcript", "UTRs")) {
             try {
@@ -180,10 +185,10 @@ public class GeneModel
     }
 
     /**
-     * Get the CDSs if present.
-     * @return the CDSs
+     * Get the CodingSequences if present.
+     * @return the CodingSequences
      */
-    public List<InterMineObject> getCDSs() {
+    public List<InterMineObject> getCodingSequences() {
         return cdss;
     }
 

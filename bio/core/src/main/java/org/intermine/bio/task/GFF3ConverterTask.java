@@ -43,7 +43,7 @@ public class GFF3ConverterTask extends Task
     protected static final Logger LOG = Logger.getLogger(GFF3ConverterTask.class);
 
     protected FileSet fileSet;
-    protected String converter, targetAlias, seqClsName, orgTaxonId;
+    protected String converter, targetAlias, seqClsName, orgTaxonId, seqAssemblyVersion;
     protected String seqDataSourceName, model, handlerClassName;
     protected GFF3Parser parser;
 
@@ -53,6 +53,7 @@ public class GFF3ConverterTask extends Task
     private String seqHandlerClassName;
 
     private boolean dontCreateLocations = false;
+    private boolean loadDuplicateEntities = false;
 
      /**
      * Set the data fileset
@@ -95,6 +96,26 @@ public class GFF3ConverterTask extends Task
      */
     public void setOrgTaxonId(String orgTaxonId) {
         this.orgTaxonId = orgTaxonId;
+    }
+
+    /**
+     * Set the assembly version
+     * @param seqAssemblyVersion the assembly version
+     */
+    public void setSeqAssemblyVersion(String seqAssemblyVersion) {
+        this.seqAssemblyVersion = seqAssemblyVersion;
+    }
+
+    /**
+     * Set whether to create Duplicate Entity items
+     * @param loadDuplicateEntities whether to load duplicate entities
+     */
+    public void setLoadDuplicateEntities(String loadDuplicateEntities) {
+        if ("true".equalsIgnoreCase(loadDuplicateEntities)) {
+            this.loadDuplicateEntities = true;
+        } else {
+            this.loadDuplicateEntities = false;
+        }
     }
 
     /**
@@ -179,6 +200,9 @@ public class GFF3ConverterTask extends Task
         if (seqClsName == null) {
             throw new BuildException("seqClsName attribute not set");
         }
+        if (seqAssemblyVersion == null) {
+            throw new BuildException("seqAssemblyVersion attribute not set");
+        }
         if (orgTaxonId == null) {
             throw new BuildException("orgTaxonId attribute not set");
         }
@@ -232,17 +256,22 @@ public class GFF3ConverterTask extends Task
                     (GFF3SeqHandler) handlerClass.getConstructor(types).newInstance(args);
             }
 
-            GFF3Converter gff3converter =
-                new GFF3Converter(writer, seqClsName, orgTaxonId, dataSourceName,
-                                  dataSetTitle, tgtModel, recordHandler, sequenceHandler, licence);
-            if (dontCreateLocations) {
-                gff3converter.setDontCreateLocations(dontCreateLocations);
-            }
             DirectoryScanner ds = fileSet.getDirectoryScanner(getProject());
             String[] files = ds.getIncludedFiles();
             if (files.length == 0) {
                 throw new BuildException("No GFF files found in: " + fileSet.getDir(getProject()));
             }
+
+            GFF3Converter gff3converter =
+                new GFF3Converter(writer, seqClsName, seqAssemblyVersion, orgTaxonId, dataSourceName,
+                                  dataSetTitle, tgtModel, recordHandler, sequenceHandler, licence);
+            if (dontCreateLocations) {
+                gff3converter.setDontCreateLocations(dontCreateLocations);
+            }
+            if (loadDuplicateEntities) {
+                gff3converter.setLoadDuplicateEntities(loadDuplicateEntities);
+            }
+
             for (int i = 0; i < files.length; i++) {
                 File f = new File(ds.getBasedir(), files[i]);
                 System.err .println("Processing file: " + f.getName());

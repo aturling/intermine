@@ -318,8 +318,9 @@ public class GenomicRegionSearchAjaxAction extends Action
                         String pid = l.get(1);
                         String symbol = l.get(2);
                         String chr = l.get(4);
-                        String start = l.get(5);
-                        String end = l.get(6);
+                        // assembly version = l.get(5)
+                        String start = l.get(6);
+                        String end = l.get(7);
                         String userInput = e.getKey().getOriginalRegion();
 
                         String[] rowArr = {pid, symbol, chr, start, end, userInput};

@@ -32,6 +32,7 @@ import org.intermine.model.bio.Organism;
 import org.intermine.objectstore.ObjectStoreException;
 import org.intermine.pathquery.Constraints;
 import org.intermine.pathquery.OrderDirection;
+import org.intermine.pathquery.PathConstraintSubclass;
 import org.intermine.pathquery.PathQuery;
 import org.intermine.web.displayer.ReportDisplayer;
 import org.intermine.web.logic.config.ReportDisplayerConfig;
@@ -130,6 +131,8 @@ public class GeneOntologyDisplayer extends ReportDisplayer
             Map<String, Map<OntologyTerm, Set<String>>> goTermsByOntology =
                 new HashMap<String, Map<OntologyTerm, Set<String>>>();
 
+            Map<String, String> ecoTermMap = new HashMap<String, String>();
+
             while (result.hasNext()) {
                 List<ResultElement> row = result.next();
                 String parentTerm = (String) row.get(0).getField();
@@ -137,6 +140,11 @@ public class GeneOntologyDisplayer extends ReportDisplayer
                 OntologyTerm term = (OntologyTerm) row.get(1).getObject();
                 String code = (String) row.get(2).getField();
                 addToOntologyMap(goTermsByOntology, parentTerm, term, code);
+
+                String ecoTermName = (String) row.get(3).getField();
+                if (code != null && code.startsWith("ECO:")) {
+                    addToEcoTermMap(ecoTermMap, code, ecoTermName);
+                }
             }
 
             // If no terms in a particular category add the parent term only to put heading in JSP
@@ -148,6 +156,7 @@ public class GeneOntologyDisplayer extends ReportDisplayer
             }
             request.setAttribute("goTerms", goTermsByOntology);
             request.setAttribute("codes", EVIDENCE_CODES);
+            request.setAttribute("ecoTermMap", ecoTermMap);
         }
     }
 
@@ -167,11 +176,21 @@ public class GeneOntologyDisplayer extends ReportDisplayer
         codes.add(evidenceCode);
     }
 
+    private static void addToEcoTermMap(Map<String, String> ecoTermMap, String ecoTermIdentifier, String ecoTermName) {
+        if (ecoTermName != null) {
+            if (!ecoTermMap.containsKey(ecoTermIdentifier)) {
+                ecoTermMap.put(ecoTermIdentifier, ecoTermName);
+            }
+        }
+    }
+
     private static PathQuery buildQuery(Model model, Integer geneId) {
         PathQuery q = new PathQuery(model);
         q.addViews("Gene.goAnnotation.ontologyTerm.parents.name",
                 "Gene.goAnnotation.ontologyTerm.name",
-                "Gene.goAnnotation.evidence.code.code");
+                "Gene.goAnnotation.evidence.code.code",
+                "Gene.goAnnotation.evidence.code.evidenceOntology.name");
+        q.addConstraint(new PathConstraintSubclass("Gene.goAnnotation.evidence.code", "GOEvidenceCode"));
         q.addOrderBy("Gene.goAnnotation.ontologyTerm.parents.name", OrderDirection.ASC);
         q.addOrderBy("Gene.goAnnotation.ontologyTerm.name", OrderDirection.ASC);
 

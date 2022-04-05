@@ -224,6 +224,8 @@ class IntegrateUtils {
                 model: "genomic",
                 handlerClassName: bioSourceProperties.getProperty("gff3.handlerClassName"),
                 seqHandlerClassName: gff3SeqHandlerClassName,
+                seqAssemblyVersion: BioSourceProperties.getUserProperty(source, "gff3.seqAssemblyVersion"),
+                loadDuplicateEntities: BioSourceProperties.getUserProperty(source, "gff3.loadDuplicateEntities"),
                 licence: licence) {
             fileset(dir: BioSourceProperties.getUserProperty(source, "src.data.dir"),
                     includes: includes)
@@ -283,7 +285,7 @@ class IntegrateUtils {
                     ant.project.setProperty(propName, prop.value)
                 }
             }
-            def fastaClassLoader = BioSourceProperties.getUserProperty(source, "fasta.loaderClassName")
+            def fastaClassLoader = BioSourceProperties.getUserProperty(source, source.type + ".loaderClassName")
             if (fastaClassLoader != null) {
                 classname = fastaClassLoader
             } else {
