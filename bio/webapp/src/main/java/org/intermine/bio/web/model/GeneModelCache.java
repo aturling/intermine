@@ -177,7 +177,7 @@ public final class GeneModelCache
                 qcTranscript, query, os);
         settings.hasFivePrimeUTRs = doesTranscriptHave("FivePrimeUTR", "fivePrimeUTR",
                 qcTranscript, query, os);
-        settings.hasCDSs = doesTranscriptHave("CDS", "CDSs", qcTranscript, query, os);
+        settings.hasCodingSequences = doesTranscriptHave("CodingSequence", "codingSequences", qcTranscript, query, os);
 
         return settings;
     }

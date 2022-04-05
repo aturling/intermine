@@ -3911,7 +3911,7 @@ may be polled later.
 <!-- ================================================================================= -->
 
   <session-config>
-    <session-timeout>1440</session-timeout>      <!-- 1440 = 24 * 60 = 1 day -->
+    <session-timeout>60</session-timeout>      <!-- Changed from 1 day to 1 hour -->  
   </session-config>
 
   <welcome-file-list>

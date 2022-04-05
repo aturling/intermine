@@ -50,4 +50,11 @@
     <class name="UTR" extends="SequenceFeature" is-interface="true" term="http://purl.obolibrary.org/obo/SO_0000203">
       <reference name="gene" referenced-type="Gene" reverse-reference="UTRs"/>
     </class>
+
+    <!-- Custom additions, need to be added here due to dependencies -->
+    <class name="CodingSequence" extends="SequenceFeature" is-interface="true"/>
+    <class name="Polypeptide" extends="SequenceFeature" is-interface="true"/>
+    <class name="SequenceAlteration" extends="SequenceFeature" is-interface="true"/>
+    <class name="Indel" extends="SequenceAlteration" is-interface="true"/>
+    <class name="SNP" extends="SequenceAlteration" is-interface="true"/>
 </classes>

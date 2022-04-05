@@ -140,6 +140,17 @@ public class GenomicRegionSearchListInput extends ListInput
         private Set<String> invalidSpans = new HashSet<String>();
         private boolean strandSpecific;
 
+        public String toString() {
+            String retStr = "Org: " + organism;
+            retStr += "Feature types: ";
+            retStr += featureTypes;
+            retStr += ", Regions: ";
+            retStr += regions;
+            retStr += ", invalidSpans: ";
+            retStr += invalidSpans;
+            return retStr;
+        }
+
         /**
          *
          * @return set of invalid spans

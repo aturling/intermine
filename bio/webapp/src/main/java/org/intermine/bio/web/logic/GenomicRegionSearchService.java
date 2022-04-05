@@ -47,17 +47,21 @@ import org.intermine.metadata.ClassDescriptor;
 import org.intermine.metadata.ConstraintOp;
 import org.intermine.metadata.Model;
 import org.intermine.metadata.StringUtil;
+import org.intermine.model.bio.Chromosome;
 import org.intermine.model.bio.Organism;
 import org.intermine.model.bio.SequenceFeature;
 import org.intermine.objectstore.ObjectStore;
+import org.intermine.objectstore.query.BagConstraint;
 import org.intermine.objectstore.query.ConstraintSet;
 import org.intermine.objectstore.query.ContainsConstraint;
 import org.intermine.objectstore.query.Query;
 import org.intermine.objectstore.query.QueryClass;
 import org.intermine.objectstore.query.QueryField;
 import org.intermine.objectstore.query.QueryObjectReference;
+import org.intermine.objectstore.query.QueryValue;
 import org.intermine.objectstore.query.Results;
 import org.intermine.objectstore.query.ResultsRow;
+import org.intermine.objectstore.query.SimpleConstraint;
 import org.intermine.pathquery.Constraints;
 import org.intermine.pathquery.OrderDirection;
 import org.intermine.pathquery.PathQuery;
@@ -70,6 +74,7 @@ import org.json.JSONObject;
  * A class to provide genomic region search services in general.
  *
  * @author Fengyuan Hu
+ * @author
  */
 public class GenomicRegionSearchService
 {
@@ -185,8 +190,10 @@ public class GenomicRegionSearchService
         }
 
         long orgFeatureTypesTime = 0;
+        long orgAssemblyVersionsTime = 0;
         long featureTypeSoTermTime = 0;
         long orgToTaxonTime = 0;
+        long orgFullNamesTime = 0;
         if (orgFeatureJSONString == null) {
             List<String> excludedFeatureTypes = getExcludedFeatureTypes();
 
@@ -194,6 +201,12 @@ public class GenomicRegionSearchService
             Map<String, Set<String>> orgFeatureTypes = getFeatureTypesForOrgs(orgList,
                     excludedFeatureTypes);
             orgFeatureTypesTime = System.currentTimeMillis() - stepTime;
+
+            // only needed if using assembly version filter, but takes < 0.2 seconds to load so
+            // grab assemblies anyway for code simplicity
+            stepTime = System.currentTimeMillis();
+            Map<String, Set<String>> orgAssemblyVersions = getAssemblyVersionsForOrgs(orgList);
+            orgAssemblyVersionsTime = System.currentTimeMillis() - stepTime;
 
             stepTime = System.currentTimeMillis();
             getFeatureTypeToSOTermMap();
@@ -203,13 +216,19 @@ public class GenomicRegionSearchService
             getOrganismToTaxonMap();
             orgToTaxonTime = System.currentTimeMillis() - stepTime;
 
-            orgFeatureJSONString = buildJSONString(orgList, orgFeatureTypes);
+            stepTime = System.currentTimeMillis();
+            Map<String, String> orgFullNames = getFullNamesForOrgs(orgList);
+            orgFullNamesTime = System.currentTimeMillis() - stepTime;
+
+            orgFeatureJSONString = buildJSONString(orgList, orgFeatureTypes, orgAssemblyVersions, orgFullNames);
         }
         LOG.info("REGION SEARCH INIT total time: " + (System.currentTimeMillis() - startTime)
                 + "ms - "
                 + "getChromosomeInfomationMap: " + chrInfoMapTime + "ms, "
                 + "getFeatureTypesForOrgs: " + orgFeatureTypesTime + "ms, "
+                + "getAssemblyVersionsForOrgs: " + orgAssemblyVersionsTime + "ms, "
                 + "getFeatureTypeToSOTermMap: " + featureTypeSoTermTime + "ms, "
+                + "getFullNamesForOrgs: " + orgFullNamesTime + "ms, "
                 + "getOrganismToTaxonMap: " + orgToTaxonTime + "ms.");
         return orgFeatureJSONString;
     }
@@ -226,6 +245,40 @@ public class GenomicRegionSearchService
             excludedFeatureTypes = Arrays.asList(excludedFeatureTypesProp.split("[, ]+"));
         }
         return excludedFeatureTypes;
+    }
+
+    // build a map of org short names to full names
+    private Map<String, String> getFullNamesForOrgs(List<String> orgList) {
+        Query q = new Query();
+        q.setDistinct(true);
+
+        QueryClass qcOrg = new QueryClass(Organism.class);
+        QueryField qfOrgName = new QueryField(qcOrg, "shortName");
+        QueryField qfOrgFullName = new QueryField(qcOrg, "name");
+
+        q.addToSelect(qfOrgName);
+        q.addToSelect(qfOrgFullName);
+
+        q.addFrom(qcOrg);
+
+        q.addToOrderBy(qfOrgName, "ascending");
+
+        ConstraintSet constraints = new ConstraintSet(ConstraintOp.AND);
+        q.setConstraint(constraints);
+        constraints.addConstraint(new BagConstraint(qfOrgName, ConstraintOp.IN, orgList));
+
+        Results results = objectStore.execute(q, initBatchSize, true, true, true);
+
+        Map<String, String> orgNameMap = new LinkedHashMap<String, String>();
+        if (results != null && results.size() > 0) {
+            for (Iterator<?> iter = results.iterator(); iter.hasNext();) {
+                ResultsRow<?> row = (ResultsRow<?>) iter.next();
+                String org = (String) row.get(0);
+                String orgFN = (String) row.get(1);
+                orgNameMap.put(org, orgFN);
+            }
+        }
+        return orgNameMap;
     }
 
     // build a map of feature types that exist per organism in the database, NOTE this also
@@ -259,6 +312,18 @@ public class GenomicRegionSearchService
         ContainsConstraint ccOrg = new ContainsConstraint(organism,
                 ConstraintOp.CONTAINS, qcOrg);
         constraints.addConstraint(ccOrg);
+
+        // SequenceFeature.class != CodingSequence
+        ClassDescriptor cld = model.getClassDescriptorByName("CodingSequence"); // string -> class
+        SimpleConstraint scCS = new SimpleConstraint(qfFeatureClass, ConstraintOp.NOT_EQUALS,
+                new QueryValue(cld.getType()));
+        constraints.addConstraint(scCS);
+
+        // SequenceFeature.class != Polypeptide
+        ClassDescriptor cld2 = model.getClassDescriptorByName("Polypeptide"); // string -> class
+        SimpleConstraint scP = new SimpleConstraint(qfFeatureClass, ConstraintOp.NOT_EQUALS,
+                new QueryValue(cld2.getType()));
+        constraints.addConstraint(scP);
 
         // constraints.addConstraint(new BagConstraint(qfOrgName,
         // ConstraintOp.IN, orgList));
@@ -310,11 +375,62 @@ public class GenomicRegionSearchService
         return orgFeatureMap;
     }
 
+    private Map<String, Set<String>> getAssemblyVersionsForOrgs(List<String> orgList) {
+        Map<String, Set<String>> orgAssemblyMap = new LinkedHashMap<String, Set<String>>();
+
+        Query q = new Query();
+        q.setDistinct(true);
+
+        QueryClass qcChr = new QueryClass(Chromosome.class);
+        QueryClass qcOrg = new QueryClass(Organism.class);
+
+        QueryField qfOrgName = new QueryField(qcOrg, "shortName");
+        QueryField qcChrAassembly = new QueryField(qcChr, "assembly");
+
+        q.addToSelect(qfOrgName);
+        q.addToSelect(qcChrAassembly);
+
+        q.addFrom(qcOrg);
+        q.addFrom(qcChr);
+
+        q.addToOrderBy(qfOrgName, "ascending");
+
+        ConstraintSet constraints = new ConstraintSet(ConstraintOp.AND);
+        q.setConstraint(constraints);
+
+        // Chromosome.organism = Organism
+        QueryObjectReference organism = new QueryObjectReference(qcChr, "organism");
+        ContainsConstraint ccOrg = new ContainsConstraint(organism, ConstraintOp.CONTAINS, qcOrg);
+        constraints.addConstraint(ccOrg);
+
+        Results results = objectStore.execute(q, initBatchSize, true, true, true);
+
+        if (results != null && results.size() > 0) {
+            for (Iterator<?> iter = results.iterator(); iter.hasNext(); ) {
+                ResultsRow<?> row = (ResultsRow<?>) iter.next();
+                String org = (String) row.get(0);
+                String assembly = (String) row.get(1);
+                if (orgAssemblyMap.containsKey(org)) {
+                    orgAssemblyMap.get(org).add(assembly);
+                }
+                else {
+                    Set<String> set = new HashSet<String>();
+                    set.add(assembly);
+                    orgAssemblyMap.put(org, set);
+                }
+            }
+        }
+        return orgAssemblyMap;
+    }
+
     // build JSON string to display region search options
-    private String buildJSONString(List<String> orgList, Map<String, Set<String>> resultsMap) {
+    private String buildJSONString(List<String> orgList, Map<String, Set<String>> resultsMap, Map<String,
+        Set<String>> orgAssemblyMap, Map<String, String> orgFullNames) {
         // Parse data to JSON string
-        List<Object> ft = new ArrayList<Object>();
-        List<Object> gb = new ArrayList<Object>();
+        List<Object> ft = new ArrayList<Object>(); // feature types
+        List<Object> oa = new ArrayList<Object>(); // organisms-assemblies
+        List<Object> gb = new ArrayList<Object>(); // genome builds
+        List<Object> fn = new ArrayList<Object>(); // full names
         Map<String, Object> ma = new LinkedHashMap<String, Object>();
 
         for (Entry<String, Set<String>> e : resultsMap.entrySet()) {
@@ -365,9 +481,29 @@ public class GenomicRegionSearchService
             gb.add(mgb);
         }
 
+        for (Entry<String, Set<String>> e : orgAssemblyMap.entrySet()) {
+            Map<String, Object> organismAssemblyEntry = new LinkedHashMap<String, Object>();
+            organismAssemblyEntry.put("organism", e.getKey());
+            ArrayList<String> assemblyVersion = new ArrayList<String>();
+            for (String v : e.getValue()) {
+                assemblyVersion.add(v);
+            }
+            organismAssemblyEntry.put("assembly", assemblyVersion);
+            oa.add(organismAssemblyEntry);
+        }
+
+        for (Entry<String, String> e: orgFullNames.entrySet()) {
+            Map<String, Object> msn = new LinkedHashMap<String, Object>();
+            msn.put("organism", e.getKey());
+            msn.put("fullname", e.getValue());
+            fn.add(msn);
+        }
+
         ma.put("organisms", orgList);
+        ma.put("assemblies", oa);
         ma.put("genomeBuilds", gb);
         ma.put("featureTypes", ft);
+        ma.put("fullnames", fn);
         JSONObject jo = new JSONObject(ma);
 
         // Note: JSONObject toString will replace \' to \\', so don't convert it before the method
@@ -514,6 +650,13 @@ public class GenomicRegionSearchService
 
         selectionInfo.add("<b>Selected organism: </b><i>" + organism + "</i>");
 
+        // Assembly
+        if (isRegionSearchAssemblyFilterEnabled()) {
+            String chrAssembly = (String) grsForm.get("assembly");
+            grsc.setChrAssembly(chrAssembly);
+            selectionInfo.add("<b>Selected assembly: </b><i>" + chrAssembly + "</i>");
+        }
+
         // Feature types
         if (featureTypes == null) {
             return new ActionMessage("genomicRegionSearch.spanFieldSelection", "feature types");
@@ -613,6 +756,7 @@ public class GenomicRegionSearchService
             // The first time to create GenomicRegion object and set ExtendedRegionSize
             GenomicRegion aSpan = new GenomicRegion();
             aSpan.setOrganism(grsc.getOrgName());
+            aSpan.setChrAssembly(grsc.getChrAssembly());
             aSpan.setExtendedRegionSize(grsc.getExtendedRegionSize());
 
             // Use regular expression to validate user's input:
@@ -853,16 +997,22 @@ public class GenomicRegionSearchService
                 if (chr.startsWith("chr")) { // UCSC format
                     if (chrInfo.containsKey(chr.substring(3))) {
                         ci = chrInfo.get(chr.substring(3));
-                    } else {
-                        continue;
                     }
-                } else {
-                    continue;
+                    // keep going to report error with chr id
+                    //else {
+                    //    continue;
+                    //}
                 }
+                // keep going to report error with chr id
+                //else {
+                //    continue;
+                //}
             }
 
             boolean passed = false; // flag to add to errorSpanList
-            if (gr.getStart() > gr.getEnd()) {
+            if (ci == null) {
+                LOG.warn("Chromosome ID " + chr + " is invalid for selected organism.");
+            } else if (gr.getStart() > gr.getEnd()) {
                 gr.setChr(ci.getChrPID()); // converted to the right case
                 // swap start, end and flag as minus strand
                 Integer grStart = gr.getStart();
@@ -1179,8 +1329,9 @@ public class GenomicRegionSearchService
              *        2.symbol
              *        3.feature type
              *        4.chr
-             *        5.start
-             *        6.end
+             *        5.assembly
+             *        6.start
+             *        7.end
              * see query fields in createQueryList method
              */
             if (features != null) {
@@ -1226,8 +1377,9 @@ public class GenomicRegionSearchService
         String firstSymbol = firstFeature.get(2);
         String firstFeatureType = firstFeature.get(3); // Class name
         String firstChr = firstFeature.get(4);
-        String firstStart = firstFeature.get(5);
-        String firstEnd = firstFeature.get(6);
+        String firstChrAssembly = firstFeature.get(5); // Currently don't do anything with for now
+        String firstStart = firstFeature.get(6);
+        String firstEnd = firstFeature.get(7);
 
         String loc = firstChr + ":" + firstStart + ".." + firstEnd;
 
@@ -1491,8 +1643,9 @@ public class GenomicRegionSearchService
         String symbol = features.get(i).get(2);
         String featureType = features.get(i).get(3);
         String chr = features.get(i).get(4);
-        String start = features.get(i).get(5);
-        String end = features.get(i).get(6);
+        String chrAssembly = features.get(i).get(5);
+        String start = features.get(i).get(6);
+        String end = features.get(i).get(7);
 
         String soTerm = WebUtil.formatPath(featureType, interMineAPI,
                 webConfig);
@@ -1547,8 +1700,9 @@ public class GenomicRegionSearchService
             String symbol = features.get(i).get(2);
             String featureType = features.get(i).get(3);
             String chr = features.get(i).get(4);
-            String start = features.get(i).get(5);
-            String end = features.get(i).get(6);
+            String chrAssembly = features.get(i).get(5);
+            String start = features.get(i).get(6);
+            String end = features.get(i).get(7);
 
             String soTerm = WebUtil.formatPath(featureType, interMineAPI,
                     webConfig);
@@ -1767,6 +1921,22 @@ public class GenomicRegionSearchService
             taxIds.add(this.getOrganismToTaxonMap().get(org));
         }
         return taxIds;
+    }
+
+    /**
+     * Test if region search assembly filter is enabled
+     * @return boolean
+     */
+    public boolean isRegionSearchAssemblyFilterEnabled() {
+        String enabled = webProperties.getProperty("genomicRegionSearch.useAssemblyFilter");
+        if (enabled != null) {
+            enabled = enabled.trim();
+            if ("true".equals(enabled)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
