@@ -194,6 +194,7 @@ public class GenomicRegionSearchService
         long featureTypeSoTermTime = 0;
         long orgToTaxonTime = 0;
         long orgFullNamesTime = 0;
+        long buildJSONStrTime = 0;
         if (orgFeatureJSONString == null) {
             List<String> excludedFeatureTypes = getExcludedFeatureTypes();
 
@@ -220,7 +221,9 @@ public class GenomicRegionSearchService
             Map<String, String> orgFullNames = getFullNamesForOrgs(orgList);
             orgFullNamesTime = System.currentTimeMillis() - stepTime;
 
+            stepTime = System.currentTimeMillis();
             orgFeatureJSONString = buildJSONString(orgList, orgFeatureTypes, orgAssemblyVersions, orgFullNames);
+            buildJSONStrTime = System.currentTimeMillis() - stepTime;
         }
         LOG.info("REGION SEARCH INIT total time: " + (System.currentTimeMillis() - startTime)
                 + "ms - "
@@ -228,8 +231,9 @@ public class GenomicRegionSearchService
                 + "getFeatureTypesForOrgs: " + orgFeatureTypesTime + "ms, "
                 + "getAssemblyVersionsForOrgs: " + orgAssemblyVersionsTime + "ms, "
                 + "getFeatureTypeToSOTermMap: " + featureTypeSoTermTime + "ms, "
+                + "getOrganismToTaxonMap: " + orgToTaxonTime + "ms, "
                 + "getFullNamesForOrgs: " + orgFullNamesTime + "ms, "
-                + "getOrganismToTaxonMap: " + orgToTaxonTime + "ms.");
+                + "buildJSONString: " + buildJSONStrTime + "ms.");
         return orgFeatureJSONString;
     }
 
