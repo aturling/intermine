@@ -317,18 +317,6 @@ public class GenomicRegionSearchService
                 ConstraintOp.CONTAINS, qcOrg);
         constraints.addConstraint(ccOrg);
 
-        // SequenceFeature.class != CodingSequence
-        ClassDescriptor cld = model.getClassDescriptorByName("CodingSequence"); // string -> class
-        SimpleConstraint scCS = new SimpleConstraint(qfFeatureClass, ConstraintOp.NOT_EQUALS,
-                new QueryValue(cld.getType()));
-        constraints.addConstraint(scCS);
-
-        // SequenceFeature.class != Polypeptide
-        ClassDescriptor cld2 = model.getClassDescriptorByName("Polypeptide"); // string -> class
-        SimpleConstraint scP = new SimpleConstraint(qfFeatureClass, ConstraintOp.NOT_EQUALS,
-                new QueryValue(cld2.getType()));
-        constraints.addConstraint(scP);
-
         // constraints.addConstraint(new BagConstraint(qfOrgName,
         // ConstraintOp.IN, orgList));
 
