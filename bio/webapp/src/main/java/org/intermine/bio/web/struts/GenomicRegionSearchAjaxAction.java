@@ -296,7 +296,7 @@ public class GenomicRegionSearchAjaxAction extends Action
             List<List<String>> exportResults = new ArrayList<List<String>>();
 
             String[] hearderArr = {"DB identifier", "Symbol", "Chr",
-                "Start", "End", "User input"};
+                "Start", "End", "Assembly", "User input"};
             List<String> headerList = new ArrayList<String>(Arrays.asList(hearderArr));
 
             int extendedSize = featureMap.keySet().iterator().next().getExtendedRegionSize();
@@ -318,12 +318,12 @@ public class GenomicRegionSearchAjaxAction extends Action
                         String pid = l.get(1);
                         String symbol = l.get(2);
                         String chr = l.get(4);
-                        // assembly version = l.get(5)
+                        String chrAssembly = l.get(5);
                         String start = l.get(6);
                         String end = l.get(7);
                         String userInput = e.getKey().getOriginalRegion();
 
-                        String[] rowArr = {pid, symbol, chr, start, end, userInput};
+                        String[] rowArr = {pid, symbol, chr, start, end, chrAssembly, userInput};
                         List<String> row = new ArrayList<String>(Arrays.asList(rowArr));
 
                         if (extendedSize > 0) {

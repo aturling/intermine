@@ -78,6 +78,9 @@ public class GenomicRegionSearchListInput extends ListInput
         JSONObject jsonRequest = new JSONObject(input);
         GenomicRegionSearchInfo parsed = new GenomicRegionSearchInfo();
         parsed.setOrganism(jsonRequest.getString("organism"));
+        if (!jsonRequest.isNull("assembly")) {
+            parsed.setChrAssembly(jsonRequest.getString("assembly"));
+        }
         if (!jsonRequest.isNull("isInterbase")) {
             parsed.setInterbase(jsonRequest.getBoolean("isInterbase"));
         }
@@ -132,6 +135,7 @@ public class GenomicRegionSearchListInput extends ListInput
 
         private final String sequenceFeature = "org.intermine.model.bio.SequenceFeature";
         private String organism;
+        private String chrAssembly;
         private Set<String> featureTypes;
         private Set<ClassDescriptor> featureCds;
         private List<String> regions;
@@ -172,6 +176,21 @@ public class GenomicRegionSearchListInput extends ListInput
          */
         public void setOrganism(String organism) {
             this.organism = organism;
+        }
+
+        /**
+         * @return assembly version
+         */
+        public String getChrAssembly() {
+            return chrAssembly;
+        }
+
+        /**
+         *
+         * @param chrAssembly assembly version
+         */
+        public void setChrAssembly(String chrAssembly) {
+            this.chrAssembly = chrAssembly;
         }
 
         /**
@@ -334,6 +353,7 @@ public class GenomicRegionSearchListInput extends ListInput
         public GenomicRegionSearchConstraint asSearchConstraint() {
             GenomicRegionSearchConstraint grsc = new GenomicRegionSearchConstraint();
             grsc.setOrgName(organism);
+            grsc.setChrAssembly(chrAssembly);
             grsc.setFeatureTypes(getFeatureClasses());
             grsc.setGenomicRegionList(getGenomicRegions());
             grsc.setExtendedRegionSize(extension);

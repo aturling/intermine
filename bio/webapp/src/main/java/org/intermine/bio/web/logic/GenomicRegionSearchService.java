@@ -416,8 +416,8 @@ public class GenomicRegionSearchService
     }
 
     // build JSON string to display region search options
-    private String buildJSONString(List<String> orgList, Map<String, Set<String>> resultsMap, Map<String,
-        Set<String>> orgAssemblyMap, Map<String, String> orgFullNames) {
+    private String buildJSONString(List<String> orgList, Map<String, Set<String>> resultsMap, 
+        Map<String, Set<String>> orgAssemblyMap, Map<String, String> orgFullNameMap) {
         // Parse data to JSON string
         List<Object> ft = new ArrayList<Object>(); // feature types
         List<Object> oa = new ArrayList<Object>(); // organisms-assemblies
@@ -484,7 +484,7 @@ public class GenomicRegionSearchService
             oa.add(organismAssemblyEntry);
         }
 
-        for (Entry<String, String> e: orgFullNames.entrySet()) {
+        for (Entry<String, String> e: orgFullNameMap.entrySet()) {
             Map<String, Object> msn = new LinkedHashMap<String, Object>();
             msn.put("organism", e.getKey());
             msn.put("fullname", e.getValue());
@@ -748,7 +748,6 @@ public class GenomicRegionSearchService
             // The first time to create GenomicRegion object and set ExtendedRegionSize
             GenomicRegion aSpan = new GenomicRegion();
             aSpan.setOrganism(grsc.getOrgName());
-            aSpan.setChrAssembly(grsc.getChrAssembly());
             aSpan.setExtendedRegionSize(grsc.getExtendedRegionSize());
 
             // Use regular expression to validate user's input:
@@ -882,6 +881,7 @@ public class GenomicRegionSearchService
             grsc.getGenomicRegionList(),
             grsc.getExtendedRegionSize(),
             grsc.getOrgName(),
+            grsc.getChrAssembly(),
             grsc.getFeatureTypes(),
             grsc.getStrandSpecific());
     }

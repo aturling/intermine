@@ -234,15 +234,16 @@ public final class GenomicRegionSearchUtil
      * @param genomicRegions list of gr
      * @param extension the flanking
      * @param organismName org short name
+     * @param chrAssembly assembly version
      * @param featureTypes ft
      * @param strandSpecific flag
      * @return map of gr-query
      */
     public static Map<GenomicRegion, Query> createQueryList(
             Collection<GenomicRegion> genomicRegions, int extension, String organismName,
-            Set<Class<?>> featureTypes, boolean strandSpecific) {
-        return createRegionQueries(genomicRegions, extension, organismName, featureTypes,
-                strandSpecific, false);
+            String chrAssembly, Set<Class<?>> featureTypes, boolean strandSpecific) {
+        return createRegionQueries(genomicRegions, extension, organismName, chrAssembly, 
+                featureTypes, strandSpecific, false);
     }
 
     /**
@@ -252,21 +253,22 @@ public final class GenomicRegionSearchUtil
      * @param extension the flanking
      * @param chromInfo chr info map
      * @param organismName org short name
+     * @param chrAssembly assembly version
      * @param featureTypes ft
      * @param strandSpecific flag
      * @return map of gr-query
      */
     public static Map<GenomicRegion, Query> createRegionListQueries(
         Collection<GenomicRegion> genomicRegions, int extension,
-        Map<String, ChromosomeInfo> chromInfo, String organismName, Set<Class<?>> featureTypes,
-        boolean strandSpecific) {
-        return createRegionQueries(genomicRegions, extension, organismName, featureTypes,
-                strandSpecific, true);
+        Map<String, ChromosomeInfo> chromInfo, String organismName, String chrAssembly, 
+        Set<Class<?>> featureTypes, boolean strandSpecific) {
+        return createRegionQueries(genomicRegions, extension, organismName, chrAssembly, 
+                featureTypes, strandSpecific, true);
     }
 
     private static Map<GenomicRegion, Query> createRegionQueries(
             Collection<GenomicRegion> genomicRegions, int extension, String organismName,
-            Set<Class<?>> featureTypes, boolean strandSpecific, boolean idOnly) {
+            String chrAssembly, Set<Class<?>> featureTypes, boolean strandSpecific, boolean idOnly) {
 
         Map<GenomicRegion, Query> queryMap = new LinkedHashMap<GenomicRegion, Query>();
 
@@ -288,9 +290,6 @@ public final class GenomicRegionSearchUtil
             q.setDistinct(true);
 
             String chrPID = aSpan.getChr();
-            // Even if not filtering by assembly, add field to query to preserve expected
-            // order of fields in query results
-            String chrAssembly = aSpan.getChrAssembly();
 
             QueryClass qcOrg = new QueryClass(Organism.class);
             QueryClass qcChr = new QueryClass(Chromosome.class);
@@ -305,6 +304,8 @@ public final class GenomicRegionSearchUtil
             QueryField qfFeatureClass = new QueryField(qcFeature, "class");
 
             QueryField qfChr = new QueryField(qcChr, "primaryIdentifier");
+            // Even if not filtering by assembly, add field to query to preserve expected
+            // order of fields in query results
             QueryField qfChrAssembly = new QueryField(qcChr, "assembly");
 
             QueryField qfLocStart = new QueryField(qcLoc, "start");
