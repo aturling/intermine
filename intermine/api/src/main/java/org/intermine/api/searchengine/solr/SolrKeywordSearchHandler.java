@@ -254,6 +254,9 @@ public final class SolrKeywordSearchHandler implements KeywordSearchHandler
                     continue;
                 }
 
+                // New: exclude ClassName.id from search results
+                if (("id").equals(value) || value.endsWith("_id")) { continue; }
+
                 fieldNames.add(value);
             }
 

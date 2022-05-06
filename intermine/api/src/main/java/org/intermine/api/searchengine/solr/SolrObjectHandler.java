@@ -519,8 +519,10 @@ public class SolrObjectHandler extends Thread
                         continue;
                     }
                     // only index strings and integers
-                    if ("java.lang.String".equals(att.getType())
-                            || "java.lang.Integer".equals(att.getType())) {
+                    // Modification: don't even include integers - excludes id, start, end, length fields
+                    //if ("java.lang.String".equals(att.getType())
+                    //        || "java.lang.Integer".equals(att.getType())) {
+                    if ("java.lang.String".equals(att.getType())) {
                         Object value = obj.getFieldValue(att.getName());
 
                         // ignore null values
