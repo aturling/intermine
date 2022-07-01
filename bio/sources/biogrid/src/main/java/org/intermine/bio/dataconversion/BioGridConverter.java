@@ -62,7 +62,10 @@ import org.xml.sax.helpers.DefaultHandler;
  *  - dmel gene doesn't resolve
  *  - if any of the participants are invalid, we throw away the interaction
  *
+ * Modified from original to not use ID Resolver (except for fly, if applicable).
+ *
  * @author Julie Sullivan
+ * @author
  */
 public class BioGridConverter extends BioFileConverter
 {
@@ -82,6 +85,7 @@ public class BioGridConverter extends BioFileConverter
     private static final String SPOKE_MODEL = "prey";
     private static final String BLANK_EXPERIMENT_NAME = "NAME NOT AVAILABLE";
     private static final String DEFAULT_IDENTIFIER_FIELD = "primaryIdentifier";
+    private static final String FLY = "7227";
     // interactions are duplicated across XML files -- don't store dupes
     private Set<Integer> interactionDetails = new HashSet<Integer>();
 
@@ -135,8 +139,10 @@ public class BioGridConverter extends BioFileConverter
             }
         }
 
+        // Update to use ID Resolver only for fly
         if (rslv == null) {
-            rslv = IdResolverService.getIdResolverByOrganism(taxonIds);
+            //rslv = IdResolverService.getIdResolverByOrganism(taxonIds);
+            rslv = IdResolverService.getFlyIdResolver();
         }
 
         BioGridHandler handler = new BioGridHandler();
@@ -641,8 +647,10 @@ public class BioGridConverter extends BioFileConverter
 
             String identifierField = config.getIdentifierName();
 
-            if (rslv != null && rslv.hasTaxon(taxonId)) {
-                identifier = resolveGene(taxonId, identifier);
+            //if (rslv != null && rslv.hasTaxon(taxonId)) {
+            if (FLY.equals(taxonId)) {
+                //identifier = resolveGene(taxonId, identifier);
+                identifier = resolveFlyGene(identifier);
             }
 
             // no valid identifiers
@@ -706,13 +714,13 @@ public class BioGridConverter extends BioFileConverter
         }
 
         /**
-         * resolve dmel and human genes
-         * @param taxonId id of organism for this gene
+         * resolve dmel genes
          * @param ih interactor holder
          * @throws ObjectStoreException
          */
-        private String resolveGene(String taxonId, String identifier) {
+        private String resolveFlyGene(String identifier) {
             String id = identifier;
+            String taxonId = FLY;
             if (rslv != null && rslv.hasTaxon(taxonId)) {
                 int resCount = rslv.countResolutions(taxonId, identifier);
                 if (resCount != 1) {
