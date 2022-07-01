@@ -21,14 +21,18 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 /**
+ * Modified from original to read properties filename from project.xml.
  *
  * @author julie sullivan
+ * @author
  *
  */
 public class UniprotConfig
 {
     private static final Logger LOG = Logger.getLogger(UniprotConfig.class);
-    private static final String PROP_FILE = "uniprot_config.properties";
+    private static final String DEFAULT_PROP_FILE = "uniprot_config.properties";
+    //private static final String PROP_FILE = "uniprot_config.properties";
+    private String PROP_FILE = DEFAULT_PROP_FILE;
     private List<String> featureTypes = new ArrayList<String>();
     private List<String> xrefs = new ArrayList<String>();
     private Map<String, ConfigEntry> entries = new HashMap<String, ConfigEntry>();
@@ -38,6 +42,18 @@ public class UniprotConfig
      * read configuration file
      */
     public UniprotConfig() {
+        //readConfig();
+        this(DEFAULT_PROP_FILE);
+    }
+
+    /**
+     * read specified configuration file if provided
+     */
+    public UniprotConfig(String PROP_FILE) {
+        if (PROP_FILE != null) {
+            this.PROP_FILE = PROP_FILE;
+        }
+        System.out.println("Reading configuration file " + PROP_FILE);
         readConfig();
     }
 
@@ -82,7 +98,7 @@ public class UniprotConfig
         Properties props = new Properties();
         try {
             props.load(getClass().getClassLoader().getResourceAsStream(PROP_FILE));
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Problem loading properties '" + PROP_FILE + "'", e);
         }
 

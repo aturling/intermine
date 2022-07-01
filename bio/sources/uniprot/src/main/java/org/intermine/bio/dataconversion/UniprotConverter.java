@@ -44,11 +44,16 @@ import java.util.Stack;
  *
  * Differs from UniProtConverter in that this Converter creates proper protein items.
  * UniProtConverter creates protein objects, that are really uniprot entries.
+ *
+ * Modified version also loads ECOTerms.
+ *
  * @author Julie Sullivan
+ * @author
  */
 public class UniprotConverter extends BioDirectoryConverter
 {
-    private static final UniprotConfig CONFIG = new UniprotConfig();
+    //private static final UniprotConfig CONFIG = new UniprotConfig();
+    private static UniprotConfig CONFIG = null;
     private static final Logger LOG = Logger.getLogger(UniprotConverter.class);
     private Map<String, String> pubs = new HashMap<String, String>();
     private Set<Item> synonymsAndXrefs = new HashSet<Item>();
@@ -61,9 +66,12 @@ public class UniprotConverter extends BioDirectoryConverter
     private Map<String, String> genes = new HashMap<String, String>();
     private Map<String, String> goterms = new HashMap<String, String>();
     private Map<String, String> goEvidenceCodes = new HashMap<String, String>();
+    private Map<String, String> ecoTerms = new HashMap<String, String>();
     private Map<String, String> ecNumbers = new HashMap<String, String>();
     private Map<String, String> proteins = new LinkedHashMap<String, String>();
     private static final int POSTGRES_INDEX_SIZE = 2712;
+    private static final String EVIDENCE_ONTOLOGY = "Evidence Ontology";
+    private static final String GO_EVIDENCE_CODE = "GO Evidence Code";
 
     // don't allow duplicate identifiers
     private Set<String> identifiers = null;
@@ -74,6 +82,7 @@ public class UniprotConverter extends BioDirectoryConverter
     private boolean allowduplicates = false;
     private boolean loadtrembl = true;
     private Set<String> taxonIds = null;
+    private String configFile = null;
 
     protected IdResolver rslv;
     private static final String FLY = "7227";
@@ -96,10 +105,22 @@ public class UniprotConverter extends BioDirectoryConverter
     }
 
     /**
+     * Initialize config before processing files
+     */
+    public void setup() {
+        CONFIG = new UniprotConfig(configFile);
+        if (taxonIds != null) {
+            addSubspecies();
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public void process(File dataDir) throws Exception {
+        // Additional setup required when using custom properties file
+        setup();
 
         try {
             datasourceRefId = getDataSource("UniProt");
@@ -282,6 +303,14 @@ public class UniprotConverter extends BioDirectoryConverter
         }
     }
 
+    /**
+     *  Sets the configuration filename (if using custom file).
+     *
+     *  @param configFile filename
+     */
+    public void setConfigFile(String configFile) {
+        this.configFile = configFile;
+    }
 
     /**
      * Sets the list of taxonIds that should be imported if using split input files.
@@ -291,7 +320,8 @@ public class UniprotConverter extends BioDirectoryConverter
     public void setUniprotOrganisms(String taxonIds) {
         this.taxonIds = new HashSet<String>(Arrays.asList(StringUtil.split(taxonIds, " ")));
         LOG.info("Setting list of organisms to " + this.taxonIds);
-        addSubspecies();
+        // Wait until config file read to do this
+        //addSubspecies();
     }
 
     /**
@@ -424,7 +454,7 @@ public class UniprotConverter extends BioDirectoryConverter
                 entry.addDbref(getAttrValue(attrs, "type"), getAttrValue(attrs, "id"));
             } else if ("property".equals(qName) && "dbReference".equals(previousQName)) {
                 String type = getAttrValue(attrs, "type");
-                String geneDesignation = CONFIG.getGeneDesignation(entry.getTaxonId());
+                String geneDesignation = getGeneDesignation(entry.getTaxonId());
                 if (type.equals(geneDesignation)) {
                     entry.addGeneDesignation(getAttrValue(attrs, "value"));
                 } else if ("evidence".equals(type)) {
@@ -1191,6 +1221,15 @@ public class UniprotConverter extends BioDirectoryConverter
             return geneFields;
         }
 
+        // which gene-designation for this organism, if applicable
+        private String getGeneDesignation(String taxId) {
+            String geneDesignation = CONFIG.getGeneDesignation(taxId);
+            if (geneDesignation == null) {
+                geneDesignation = CONFIG.getGeneDesignation("default");
+            }
+            return geneDesignation;
+        }
+
         private String resolveGene(String taxId, String identifier) {
             if (FLY.equals(taxId)) {
                 return resolveFlyGene(taxId, identifier);
@@ -1287,28 +1326,65 @@ public class UniprotConverter extends BioDirectoryConverter
         return refId;
     }
 
-    // value is NAS:FlyBase
     private String getGOEvidenceCode(String value)
         throws SAXException {
-        String[] bits = value.split(":");
-        String code = "";
-        if (bits == null) {
-            code = value;
+        String refId;
+
+        if (value.startsWith("ECO:")) {
+            // value is an ECO ontology term
+            refId = goEvidenceCodes.get(value);
+            if (refId == null) {
+                Item item = createItem("GOEvidenceCode");
+                item.setAttribute("code", value);
+                item.setAttribute("source", EVIDENCE_ONTOLOGY);
+                item.setReference("evidenceOntology", getECOTerm(value));
+                refId = item.getIdentifier();
+                goEvidenceCodes.put(value, refId);
+                try {
+                    store(item);
+                } catch (ObjectStoreException e) {
+                    throw new SAXException(e);
+                }
+            }
         } else {
-            code = bits[0];
+            // value is a GO Evidence Code
+            String[] bits = value.split(":");
+            String code = "";
+            if (bits == null) {
+                code = value;
+            } else {
+                code = bits[0];
+            }
+            refId = goEvidenceCodes.get(code);
+            if (refId == null) {
+                Item item = createItem("GOEvidenceCode");
+                item.setAttribute("code", code);
+                item.setAttribute("source", GO_EVIDENCE_CODE);
+                refId = item.getIdentifier();
+                goEvidenceCodes.put(code, refId);
+                try {
+                    store(item);
+                } catch (ObjectStoreException e) {
+                    throw new SAXException(e);
+                }
+            }
         }
-        String refId = goEvidenceCodes.get(code);
+        return refId;
+    }
+
+    private String getECOTerm(String value) throws SAXException {
+        String refId = ecoTerms.get(value);
         if (refId == null) {
-            Item item = createItem("GOEvidenceCode");
-            item.setAttribute("code", code);
+            Item item = createItem("ECOTerm");
+            item.setAttribute("identifier", value);
+            item.setReference("ontology", setOntology(EVIDENCE_ONTOLOGY));
             refId = item.getIdentifier();
-            goEvidenceCodes.put(code, refId);
+            ecoTerms.put(value, refId);
             try {
                 store(item);
             } catch (ObjectStoreException e) {
                 throw new SAXException(e);
             }
-
         }
         return refId;
     }

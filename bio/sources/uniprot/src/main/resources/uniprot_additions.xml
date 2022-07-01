@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <classes>
+  <class name="BioEntity" extends="Annotatable" is-interface="true">
+    <attribute name="source" type="java.lang.String"/>
+  </class>
   <class name="UniProtFeature" is-interface="true">
     <attribute name="type" type="java.lang.String"/>
     <attribute name="description" type="java.lang.String"/>
@@ -12,7 +15,8 @@
     <attribute name="isFragment" type="java.lang.Boolean"/>
     <attribute name="isUniprotCanonical" type="java.lang.Boolean"/>
     <attribute name="uniprotAccession" type="java.lang.String"/>
-    <attribute name="uniprotName" type="java.lang.String"/>    
+    <attribute name="uniprotName" type="java.lang.String"/> 
+    <attribute name="ecNumber" type="java.lang.String"/> 
     <reference name="canonicalProtein" referenced-type="Protein" reverse-reference="isoforms" />
     <collection name="ecNumbers" referenced-type="ECNumber" reverse-reference="proteins" />
     <collection name="comments" referenced-type="Comment" />
@@ -30,14 +34,18 @@
     <attribute name="name" type="java.lang.String" />
     <reference name="protein" referenced-type="Protein" reverse-reference="components" />
   </class>
-<class name="GOAnnotation" extends="OntologyAnnotation" is-interface="true"/>
-<class name="GOTerm" extends="OntologyTerm" is-interface="true"/>
-<class name="GOEvidence" extends="OntologyEvidence" is-interface="true" />
-<class name="GOEvidenceCode" extends="OntologyAnnotationEvidenceCode" is-interface="true"/>
-<class name="Gene" is-interface="true">
-  <collection name="goAnnotation" referenced-type="GOAnnotation"/>
-</class>
-<class name="Comment" is-interface="true">
-  <collection name="publications" referenced-type="Publication"/>
-</class>
+  <class name="ECOTerm" extends="OntologyTerm" is-interface="true"/>
+  <class name="GOAnnotation" extends="OntologyAnnotation" is-interface="true"/>
+  <class name="GOTerm" extends="OntologyTerm" is-interface="true"/>
+  <class name="GOEvidence" extends="OntologyEvidence" is-interface="true" />
+  <class name="GOEvidenceCode" extends="OntologyAnnotationEvidenceCode" is-interface="true">
+    <attribute name="source" type="java.lang.String"/>
+    <reference name="evidenceOntology" referenced-type="ECOTerm"/>
+  </class>
+  <class name="Gene" is-interface="true">
+    <collection name="goAnnotation" referenced-type="GOAnnotation"/>
+  </class>
+  <class name="Comment" is-interface="true">
+    <collection name="publications" referenced-type="Publication"/>
+  </class>
 </classes>
