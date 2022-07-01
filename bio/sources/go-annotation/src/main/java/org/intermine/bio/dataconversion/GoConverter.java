@@ -87,6 +87,8 @@ public class GoConverter extends BioFileConverter
     private String datasetRefId = null;
     private static final Logger LOG = Logger.getLogger(GoConverter.class);
     private static final String GO_ANNOTATION_NAME = "GO Annotation";
+    private static final String FIELD_EMPTY_SYMBOL = ".";
+    private String geneSource = null;
 
     /**
      * Constructor
@@ -275,13 +277,13 @@ public class GoConverter extends BioFileConverter
             int readColumn = config.readColumn();
             String productId = array[readColumn];
 
-            String goId = array[4];
-            String qualifier = array[3];
-            String strEvidence = array[6];
-            String withText = array[7];
+            String goId = fieldValue(array[4]);
+            String qualifier = fieldValue(array[3]);
+            String strEvidence = fieldValue(array[6]);
+            String withText = fieldValue(array[7]);
             String annotationExtension = null;
             if (array.length >= 16) {
-                annotationExtension = array[15];
+                annotationExtension = fieldValue(array[15]);
             }
             if (StringUtils.isNotEmpty(strEvidence)) {
                 if (!evidenceCodes.containsKey(strEvidence)) {
@@ -347,6 +349,17 @@ public class GoConverter extends BioFileConverter
         }
         storeProductCollections();
         storeEvidence();
+    }
+
+    // Check if field value empty
+    // converts empty symbol to empty string
+    private String fieldValue(String val) {
+        if (StringUtils.isNotEmpty(val) && !val.equals(FIELD_EMPTY_SYMBOL)) {
+            return val;
+        } else {
+            // Return empty string (not null - results in NullPointerException)
+            return "";
+        }
     }
 
     /**
@@ -542,7 +555,7 @@ public class GoConverter extends BioFileConverter
         }
 
         boolean includeOrganism;
-        if ("primaryIdentifier".equals(idField) || "protein".equals(type)) {
+        if ("protein".equals(type)) {
             includeOrganism = false;
         } else {
             includeOrganism = createOrganism;
@@ -625,6 +638,8 @@ public class GoConverter extends BioFileConverter
             title = "Proteome Inc.";
         } else if ("Pfam".equalsIgnoreCase(sourceCode)) {
             title = "PFAM"; // to merge with interpro
+        } else if ("maize-GAMER".equalsIgnoreCase(sourceCode)) {
+            title = "Maize-Gamer"; // added 11/22/19
         }
         return title;
     }
@@ -647,9 +662,11 @@ public class GoConverter extends BioFileConverter
 
                     }
                 }
-            } else {
-                xrefs.add(array[i]);
             }
+            // Ignore if not a publication 
+            //else {
+            //    xrefs.add(array[i]);
+            //}
         }
         ReferenceList refIds = new ReferenceList("crossReferences");
 
