@@ -49,6 +49,7 @@ public class EnsemblComparaConverter extends BioFileConverter
     protected IdResolver rslv = null;
     private Map<String, String> configs = new HashMap<String, String>();
     private static String evidenceRefId = null;
+    private static final int NUM_COLS = 4; // expected number of columns in input files
 
     /**
      * Constructor
@@ -66,6 +67,7 @@ public class EnsemblComparaConverter extends BioFileConverter
      */
     public void setEnsemblcomparaOrganisms(String taxonIds) {
         this.taxonIds = new HashSet<String>(Arrays.asList(StringUtils.split(taxonIds, " ")));
+        LOG.info("Setting organism list to " + taxonIds);
     }
 
     /**
@@ -75,6 +77,7 @@ public class EnsemblComparaConverter extends BioFileConverter
      */
     public void setEnsemblcomparaHomologues(String taxonIds) {
         this.homologues = new HashSet<String>(Arrays.asList(StringUtils.split(taxonIds, " ")));
+        LOG.info("Setting homologue list to " + taxonIds);
     }
 
     private void readConfig() {
@@ -135,16 +138,23 @@ public class EnsemblComparaConverter extends BioFileConverter
         Iterator<String[]> lineIter = FormattedTextParser.parseTabDelimitedReader(reader);
         while (lineIter.hasNext()) {
             String[] line = lineIter.next();
-            if (line.length < 2 && StringUtils.isNotEmpty(line.toString())) {
-                throw new RuntimeException("Invalid line, should be 2 columns but is '"
-                        + line.length + "' instead");
+            if (line.length < NUM_COLS && StringUtils.isNotEmpty(line.toString())) {
+                throw new RuntimeException("Invalid line: " + Arrays.toString(line) + ", should be " + NUM_COLS
+                        + " columns but is '" + line.length + "' instead" );
             }
 
             String gene1 = line[0];
             String gene2 = line[1];
+            String ancestor = line[2];
+            String type = line[3];
 
             if (gene1.startsWith("Ensembl")) {
                 // skip header that biomart starts with
+                continue;
+            }
+
+            if (gene1.startsWith("Gene stable")) {
+                // a different header format, also skip
                 continue;
             }
 
@@ -161,21 +171,23 @@ public class EnsemblComparaConverter extends BioFileConverter
             }
 
             // store homologues
-            processHomologue(refId1, refId2);
-            processHomologue(refId2, refId1);
+            processHomologue(refId1, refId2, ancestor, type);
+            processHomologue(refId2, refId1, ancestor, type);
             lastGene1 = gene1;
             lastGene2 = gene2;
         }
     }
 
     // save homologue pair
-    private void processHomologue(String gene1, String gene2)
+    private void processHomologue(String gene1, String gene2, String ancestor, String type)
         throws ObjectStoreException {
         Item homologue = createItem("Homologue");
         homologue.setReference("gene", gene1);
         homologue.setReference("homologue", gene2);
         homologue.addToCollection("evidence", getEvidence());
-        homologue.setAttribute("type", "homologue");
+        //homologue.setAttribute("type", "homologue");
+        homologue.setAttribute("lastCommonAncestor", ancestor);
+        homologue.setAttribute("type", type);
         store(homologue);
     }
 
