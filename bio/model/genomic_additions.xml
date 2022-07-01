@@ -51,10 +51,18 @@
       <reference name="gene" referenced-type="Gene" reverse-reference="UTRs"/>
     </class>
 
-    <!-- Custom additions, need to be added here due to dependencies -->
+    <!--Custom additions, need to be added here due to dependencies-->
+
+    <!--CDS/Protein FASTA-->
     <class name="CodingSequence" extends="SequenceFeature" is-interface="true"/>
     <class name="Polypeptide" extends="SequenceFeature" is-interface="true"/>
+
+    <!--SNP-->
+    <class name="Deletion" extends="SequenceAlteration" is-interface="true"/>
+    <class name="Delins" extends="SequenceAlteration" is-interface="true"/>
+    <class name="Insertion" extends="SequenceAlteration" is-interface="true"/>
+    <class name="MNV" extends="SequenceAlteration" is-interface="true"/>
     <class name="SequenceAlteration" extends="SequenceFeature" is-interface="true"/>
-    <class name="Indel" extends="SequenceAlteration" is-interface="true"/>
-    <class name="SNP" extends="SequenceAlteration" is-interface="true"/>
+    <class name="SNV" extends="SequenceAlteration" is-interface="true"/>
+
 </classes>
