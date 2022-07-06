@@ -34,6 +34,7 @@ import org.intermine.objectstore.ObjectStore;
 import org.intermine.objectstore.ObjectStoreFactory;
 import org.intermine.objectstore.query.Query;
 import org.intermine.objectstore.query.QueryClass;
+import org.intermine.util.PropertiesUtil;
 import org.intermine.util.SAXParser;
 import org.intermine.xml.full.FullRenderer;
 import org.intermine.xml.full.Item;
@@ -44,19 +45,22 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Class to fill in organism information using Entrez.
+ * Modified to include API key in requests.
  * @author Mark Woodbridge
  * @author Kim Rutherford
+ * @author
  */
 public class EntrezOrganismRetriever extends Task
 {
     protected static final Logger LOG = Logger.getLogger(EntrezOrganismRetriever.class);
     // see https://eutils.ncbi.nlm.nih.gov/entrez/query/static/esummary_help.html for details
     protected static final String ESUMMARY_URL =
-        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=taxonomy&retmode=xml&id=";
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=taxonomy&retmode=xml";
     // number of summaries to retrieve per request
     protected static final int BATCH_SIZE = 50;
     private String osAlias = null;
     private String outputFile = null;
+    private static final String PROP_KEY = "ncbi.eutils.apiKey";
 
     /**
      * Set the ObjectStore alias.
@@ -168,7 +172,8 @@ public class EntrezOrganismRetriever extends Task
      * @throws Exception if an error occurs
      */
     protected Reader getReader(Set<String> ids) throws Exception {
-        URL url = new URL(ESUMMARY_URL + StringUtil.join(ids, ","));
+        //URL url = new URL(ESUMMARY_URL + StringUtil.join(ids, ","));
+        URL url = new URL(getEsummaryURL() + StringUtil.join(ids, ","));
         return new BufferedReader(new InputStreamReader(url.openStream()));
     }
 
@@ -179,8 +184,24 @@ public class EntrezOrganismRetriever extends Task
      * @throws Exception if something goes wrong
      */
     protected static Reader getReader(Integer id) throws Exception {
-        URL url = new URL(ESUMMARY_URL + id);
+        //URL url = new URL(ESUMMARY_URL + id);
+        URL url = new URL(getEsummaryURL() + id);
         return new BufferedReader(new InputStreamReader(url.openStream()));
+    }
+
+    /**
+     * Build the esummary URL with parameters including API key
+     * @return String esummary URL with parameters
+     */
+    private static String getEsummaryURL() {
+        String url = ESUMMARY_URL;
+        // Use API key in url if present
+        String entrezApiKey = PropertiesUtil.getProperties().getProperty(PROP_KEY);
+        if (entrezApiKey != null) {
+            url += "&api_key=" + entrezApiKey;
+        }
+        url += "&id=";
+        return url;
     }
 
 /*

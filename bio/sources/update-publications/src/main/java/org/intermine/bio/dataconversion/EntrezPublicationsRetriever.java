@@ -47,6 +47,7 @@ import org.intermine.objectstore.query.Query;
 import org.intermine.objectstore.query.QueryClass;
 import org.intermine.objectstore.query.QueryField;
 import org.intermine.objectstore.query.SimpleConstraint;
+import org.intermine.util.PropertiesUtil;
 import org.intermine.util.SAXParser;
 import org.intermine.xml.full.FullRenderer;
 import org.intermine.xml.full.Item;
@@ -93,6 +94,7 @@ public class EntrezPublicationsRetriever
     private boolean loadFullRecord = false;
     private Map<String, Item> meshTerms = new HashMap<String, Item>();
     private static final int POSTGRES_INDEX_SIZE = 2712;
+    protected static final String PROP_KEY = "ncbi.eutils.apiKey";
 
     /**
      * Load summary version of Publication record by default. If this boolean (loadFullRecord)
@@ -368,8 +370,15 @@ public class EntrezPublicationsRetriever
         // con.setRequestProperty("User-Agent", USER_AGENT);
         con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
-        String urlParameters = "tool=intermine&db=pubmed&rettype=abstract&retmode=xml&id="
-                + StringUtil.join(ids, ",");
+        // Use API key if present
+        String entrezApiKey = PropertiesUtil.getProperties().getProperty(PROP_KEY);
+        String urlParameters = "tool=intermine&db=pubmed&rettype=abstract&retmode=xml";
+        if (entrezApiKey != null) {
+            urlParameters += "&api_key=" + entrezApiKey;
+        }
+        urlParameters += "&id=" + StringUtil.join(ids, ",");
+        //String urlParameters = "tool=intermine&db=pubmed&rettype=abstract&retmode=xml&id="
+        //        + StringUtil.join(ids, ",");
 
         // Send post request
         con.setDoOutput(true);
