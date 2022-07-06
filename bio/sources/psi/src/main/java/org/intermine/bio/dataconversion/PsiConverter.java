@@ -68,6 +68,7 @@ public class PsiConverter extends BioFileConverter
     private static final String BINDING_SITE = "MI:0117";
     private static final Set<String> INTERESTING_COMMENTS = new HashSet<String>();
     private static final String ATH_TAXONID = "3702";  // A. thaliana taxon ID. (ThaleMine)
+    private static final String FLY = "7227";
 
     protected IdResolver rslv;
 
@@ -106,14 +107,16 @@ public class PsiConverter extends BioFileConverter
     public void process(Reader reader) throws Exception {
 
         // A. thaliana does not use ID resolver, and the alias type is locus name.
-        if (taxonIds.size() == 1 && taxonIds.contains(ATH_TAXONID)) {
-            aliasType = "locus name";
-        } else {
+        //if (taxonIds.size() == 1 && taxonIds.contains(ATH_TAXONID)) {
+        //    aliasType = "locus name";
+        //} else {
             // init reslover
             if (rslv == null) {
-                rslv = IdResolverService.getIdResolverByOrganism(taxonIds);
+                //rslv = IdResolverService.getIdResolverByOrganism(taxonIds);
+                // Change to use ID Resolver for fly only:
+                rslv = IdResolverService.getFlyIdResolver();
             }
-        }
+        //}
 
         PsiHandler handler = new PsiHandler();
         try {
@@ -658,7 +661,11 @@ public class PsiConverter extends BioFileConverter
             }
 
             for (String identifier : identifiers) {
-                String newIdentifier = resolveGeneIdentifier(taxonId, datasource, identifier);
+                //String newIdentifier = resolveGeneIdentifier(taxonId, datasource, identifier);
+                String newIdentifier = identifier;
+                if (FLY.equals(taxonId)) {
+                    newIdentifier = resolveGeneIdentifier(taxonId, datasource, identifier);
+                }
                 if (StringUtils.isNotEmpty(newIdentifier)) {
                     String refId = storeGene(field, newIdentifier, taxonId);
                     refIds.add(refId);
@@ -698,9 +705,9 @@ public class PsiConverter extends BioFileConverter
             }
 
             // If this is A. thaliana, make ids uppercase.
-            if (taxonId.equals(ATH_TAXONID)) {
-                return id.toUpperCase();
-            }
+            //if (taxonId.equals(ATH_TAXONID)) {
+            //    return id.toUpperCase();
+            //}
 
             return id;
         }
