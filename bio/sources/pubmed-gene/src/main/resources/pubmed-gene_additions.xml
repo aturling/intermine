@@ -1,3 +1,6 @@
 <?xml version="1.0"?>
 <classes>
+  <class name="BioEntity" extends="Annotatable" is-interface="true">
+    <attribute name="source" type="java.lang.String"/>
+  </class>
 </classes>

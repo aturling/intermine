@@ -28,8 +28,10 @@ import org.intermine.xml.full.Item;
 
 /**
  * DataConverter creating items from PubMed data file
+ * Modified from original to load Gene.source and not use ID resolver.
  *
  * @author Jakub Kulaviak
+ * @author
  */
 public class PubMedGeneConverter extends BioFileConverter
 {
@@ -38,6 +40,8 @@ public class PubMedGeneConverter extends BioFileConverter
     private Map<String, String> publications = new HashMap<String, String>();
     protected IdResolver rslv;
     private Map<String, Item> genes = new HashMap<String, Item>();
+    private String geneSource = null;
+    private static final String FLY = "7227";
 
     /**
      * @param writer item writer
@@ -46,6 +50,15 @@ public class PubMedGeneConverter extends BioFileConverter
      */
     public PubMedGeneConverter(ItemWriter writer, Model model) throws ObjectStoreException {
         super(writer, model, "NCBI", "PubMed to gene mapping");
+    }
+
+    /**
+     * Sets the gene source for all genes created
+     * @param geneSource gene source
+     */
+    public void setGeneSource(String geneSource) {
+        System.out.println("Setting gene source to " + geneSource);
+        this.geneSource = geneSource;
     }
 
     /**
@@ -66,6 +79,10 @@ public class PubMedGeneConverter extends BioFileConverter
     public void process(Reader reader)
         throws Exception {
 
+        if (StringUtils.isEmpty(geneSource)) {
+            throw new RuntimeException("Gene source not set in project.xml");
+        }
+
         if (rslv == null) {
             rslv = IdResolverService.getIdResolverByOrganism(taxonIds);
         }
@@ -78,8 +95,9 @@ public class PubMedGeneConverter extends BioFileConverter
                 continue;
             }
 
-            String originalTaxonId = line[0];
-            String taxonId = replaceSubspecies(originalTaxonId);
+            //String originalTaxonId = line[0];
+            //String taxonId = replaceSubspecies(originalTaxonId);
+            String taxonId = line[0];
             String geneId = line[1];
             String pubmedId = line[2];
 
@@ -127,7 +145,11 @@ public class PubMedGeneConverter extends BioFileConverter
     }
 
     private Item getGene(String identifier, String taxonId) {
-        String resolvedIdentifier = resolveGene(taxonId, identifier);
+        String resolvedIdentifier = identifier;
+        // Use ID resolver for fly genes only
+        if (FLY.equals(taxonId)) {
+            resolvedIdentifier = resolveGene(taxonId, identifier);
+        }
         if (resolvedIdentifier == null) {
             return null;
         }
@@ -135,6 +157,7 @@ public class PubMedGeneConverter extends BioFileConverter
         if (gene == null) {
             gene = createItem("Gene");
             gene.setAttribute("primaryIdentifier", resolvedIdentifier);
+            gene.setAttribute("source", geneSource);
             gene.setReference("organism", getOrganism(taxonId));
             genes.put(resolvedIdentifier, gene);
         }
