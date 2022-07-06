@@ -15,6 +15,7 @@
      <attribute name="name" type="java.lang.String"/>
      <attribute name="shortName" type="java.lang.String"/>
      <attribute name="curated" type="java.lang.Boolean"/>
+     <reference name="organism" referenced-type="Organism"/>
      <collection name="genes" referenced-type="Gene" reverse-reference="pathways"/>
      <collection name="proteins" referenced-type="Protein"/>
      <collection name="dataSets" referenced-type="DataSet"/>
