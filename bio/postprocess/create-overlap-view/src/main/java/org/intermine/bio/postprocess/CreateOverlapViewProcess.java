@@ -26,7 +26,9 @@ import org.intermine.objectstore.ObjectStoreException;
 /**
  * A task the replace the sequencefeatureoverlappingfeatures table with a view that uses the
  * int4range type to calculate the overlaps.
+ * Modified from original to exclude locations with donotcomputeoverlap flag set.
  * @author Kim Rutherford
+ * @author
  */
 public class CreateOverlapViewProcess extends PostProcessor
 {
@@ -83,6 +85,7 @@ public class CreateOverlapViewProcess extends PostProcessor
                         + "           l2.featureid AS sequencefeature "
                         + "      FROM location l1, location l2 "
                         + "     WHERE l1.locatedonid = l2.locatedonid "
+                        + "       AND l1.donotcomputeoverlaps IS NULL "
                         + "       AND l1.featureid != l2.featureid"
                         + "       AND int4range(l1.intermine_start, l1.intermine_end + 1) "
                         + "           && int4range(l2.intermine_start, l2.intermine_end + 1)";

@@ -10,12 +10,23 @@ package org.intermine.bio.postprocess;
  *
  */
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import org.intermine.bio.util.BioQueries;
 import org.intermine.bio.util.PostProcessUtil;
 import org.intermine.model.bio.Chromosome;
+import org.intermine.model.bio.Deletion;
+import org.intermine.model.bio.Delins;
+import org.intermine.model.bio.Insertion;
 import org.intermine.model.bio.Location;
+import org.intermine.model.bio.MNV;
+import org.intermine.model.bio.SequenceAlteration;
 import org.intermine.model.bio.SequenceFeature;
+import org.intermine.model.bio.SNV;
 import org.intermine.objectstore.ObjectStoreException;
 import org.intermine.objectstore.ObjectStoreWriter;
 import org.intermine.objectstore.proxy.ProxyReference;
@@ -23,17 +34,44 @@ import org.intermine.objectstore.query.Results;
 import org.intermine.objectstore.query.ResultsRow;
 import org.intermine.postprocess.PostProcessor;
 
+import org.intermine.bio.util.Constants;
+import org.intermine.objectstore.ObjectStore;
+import org.intermine.objectstore.intermine.ObjectStoreInterMineImpl;
+import org.intermine.metadata.ClassDescriptor;
+import org.intermine.metadata.ConstraintOp;
+import org.intermine.objectstore.query.ConstraintSet;
+import org.intermine.objectstore.query.ContainsConstraint;
+import org.intermine.objectstore.query.Query;
+import org.intermine.objectstore.query.QueryClass;
+import org.intermine.objectstore.query.QueryField;
+import org.intermine.objectstore.query.QueryNode;
+import org.intermine.objectstore.query.QueryObjectReference;
+import org.intermine.objectstore.query.QueryValue;
+import org.intermine.objectstore.query.SimpleConstraint;
+
 /**
  * Calculate additional mappings between annotation after loading into genomic ObjectStore.
  * Currently designed to cope with situation after loading ensembl, may need to change
  * as other annotation is loaded.  New Locations (and updated BioEntities) are stored
  * back in originating ObjectStore.
  *
+ * Modified from original to ignore SNP-related classes.
+ *
  * @author Richard Smith
  * @author Kim Rutherford
+ * @author
  */
 public class CreateChromosomeLocationsProcess extends PostProcessor
 {
+    // SNP-related classes
+    private static final ArrayList<String> SNPClasses = new ArrayList<String>(
+        Arrays.asList("Deletion",
+                      "Delins",
+                      "Insertion",
+                      "MNV",
+                      "SNV",
+                      "SequenceAlteration"));
+
     /**
      * Create a new instance
      *
@@ -51,8 +89,12 @@ public class CreateChromosomeLocationsProcess extends PostProcessor
      */
     public void postProcess()
             throws ObjectStoreException {
-        Results results = BioQueries.findLocationAndObjects(osw, Chromosome.class,
-                SequenceFeature.class, true, false, false, 10000);
+        // Instead of using built-in query, use custom version that's almost the same
+        // but excludes SNP and Indel here instead of looping through all of them
+        // to save time
+        //Results results = BioQueries.findLocationAndObjects(osw, Chromosome.class,
+        //        SequenceFeature.class, true, false, false, 10000);
+        Results results = findLocationAndObjects(osw, Chromosome.class, SequenceFeature.class, 10000);
         Iterator<?> resIter = results.iterator();
 
         osw.beginTransaction();
@@ -70,7 +112,8 @@ public class CreateChromosomeLocationsProcess extends PostProcessor
 
             Integer chrId = (Integer) rr.get(0);
             SequenceFeature lsf = (SequenceFeature) rr.get(1);
-            Location locOnChr = (Location) rr.get(2);
+            // Location moved to position 3 (from 2 in original query)
+            Location locOnChr = (Location) rr.get(3);
 
             if (lastFeature != null && !lsf.getId().equals(lastFeature.getId())) {
                 // not a duplicated so we can set references for last feature
@@ -121,5 +164,61 @@ public class CreateChromosomeLocationsProcess extends PostProcessor
         lsfClone.proxyChromosome(new ProxyReference(osw, chrId, Chromosome.class));
 
         osw.store(lsfClone);
+    }
+
+    /**
+     * Custom version of BioQueries function
+     */
+    public static Results findLocationAndObjects(ObjectStore os, Class<?> objectCls,
+        Class<?> subjectCls, int batchSize) throws ObjectStoreException {
+        Query q = new Query();
+        q.setDistinct(false);
+        QueryClass qcObj = new QueryClass(objectCls);
+        QueryField qfObj = new QueryField(qcObj, "id");
+        q.addFrom(qcObj);
+        q.addToSelect(qfObj);
+        QueryClass qcSub = new QueryClass(subjectCls);
+        QueryField qfSubClass = new QueryField(qcSub, "class");
+        q.addFrom(qcSub);
+        q.addToSelect(qcSub);
+        q.addToSelect(qfSubClass);
+        q.addToOrderBy(qcSub);
+        Class<?> locationCls;
+        try {
+            locationCls = Class.forName("org.intermine.model.bio.Location");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        QueryClass qcLoc = new QueryClass(locationCls);
+        q.addFrom(qcLoc);
+        q.addToSelect(qcLoc);
+        ConstraintSet cs = new ConstraintSet(ConstraintOp.AND);
+
+        // Exclude SNP-related classes:
+        for (String SNPclass : SNPClasses) {
+            // class != SNPclass
+            ClassDescriptor cld = os.getModel().getClassDescriptorByName(SNPclass); // string -> class
+            SimpleConstraint scCS = new SimpleConstraint(qfSubClass, ConstraintOp.NOT_EQUALS,
+                    new QueryValue(cld.getType()));
+            cs.addConstraint(scCS);
+        }
+        QueryObjectReference ref1 = new QueryObjectReference(qcLoc, "locatedOn");
+        ContainsConstraint cc1 = new ContainsConstraint(ref1, ConstraintOp.CONTAINS, qcObj);
+        cs.addConstraint(cc1);
+        QueryObjectReference ref2 = new QueryObjectReference(qcLoc, "feature");
+        ContainsConstraint cc2 = new ContainsConstraint(ref2, ConstraintOp.CONTAINS, qcSub);
+        cs.addConstraint(cc2);
+
+        q.setConstraint(cs);
+        Set<QueryNode> indexesToCreate = new HashSet<QueryNode>();
+        indexesToCreate.add(qfObj);
+        indexesToCreate.add(qcLoc);
+        indexesToCreate.add(qcSub);
+        ((ObjectStoreInterMineImpl) os).precompute(q, indexesToCreate,
+                                                   Constants.PRECOMPUTE_CATEGORY);
+
+        Results res = os.execute(q, batchSize, true, true, true);
+
+        return res;
     }
 }

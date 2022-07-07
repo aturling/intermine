@@ -29,7 +29,11 @@ import org.intermine.objectstore.ObjectStoreException;
 /**
  * Create an index on the location table to be used for range queries.
  * Uses the built-in int4range type.
+ *
+ * Modified from original version to not process if Location.doNotComputeOverlaps flag is set.
+ *
  * @author Richard Smith
+ * @author
  */
 public class CreateLocationOverlapIndexProcess extends PostProcessor
 {
@@ -78,7 +82,7 @@ public class CreateLocationOverlapIndexProcess extends PostProcessor
             long startTime = System.currentTimeMillis();
             String indexSql = "CREATE INDEX location__int4range "
                     + "ON location USING " + indexType + " (" + RANGE_TYPE
-                    + "(intermine_start, intermine_end + 1))";
+                    + "(intermine_start, intermine_end + 1)) WHERE location.donotcomputeoverlaps IS NULL";
             LOG.info(indexSql);
             Statement statement = con.createStatement();
             statement.executeUpdate(indexSql);
