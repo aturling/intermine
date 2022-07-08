@@ -1412,7 +1412,8 @@ public class UniprotConverter extends BioDirectoryConverter
         if (refId == null) {
             Item ontology = createItem("Ontology");
             ontology.setAttribute("name", title);
-            ontologies.put(title, ontology.getIdentifier());
+            refId = ontology.getIdentifier();
+            ontologies.put(title, refId);
             try {
                 store(ontology);
             } catch (ObjectStoreException e) {

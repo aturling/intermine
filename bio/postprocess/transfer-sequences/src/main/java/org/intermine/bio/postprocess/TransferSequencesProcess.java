@@ -268,10 +268,6 @@ public class TransferSequencesProcess extends PostProcessor
                     continue;
                 }
 
-                if (PostProcessUtil.isInstance(model, feature, "SNP")) {
-                    continue;
-                }
-
                 // if we set here the transcripts, using start and end locations,
                 // we won't be using the transferToTranscripts method (collating the exons)
                 if (PostProcessUtil.isInstance(model, feature, "Transcript")) {

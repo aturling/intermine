@@ -21,6 +21,7 @@ import org.intermine.bio.util.PostProcessUtil;
 import org.intermine.model.bio.Chromosome;
 import org.intermine.model.bio.Deletion;
 import org.intermine.model.bio.Delins;
+import org.intermine.model.bio.Indel;
 import org.intermine.model.bio.Insertion;
 import org.intermine.model.bio.Location;
 import org.intermine.model.bio.MNV;
@@ -55,7 +56,7 @@ import org.intermine.objectstore.query.SimpleConstraint;
  * as other annotation is loaded.  New Locations (and updated BioEntities) are stored
  * back in originating ObjectStore.
  *
- * Modified from original to ignore SNP-related classes.
+ * Modified from original to ignore SNV.
  *
  * @author Richard Smith
  * @author Kim Rutherford
@@ -63,10 +64,11 @@ import org.intermine.objectstore.query.SimpleConstraint;
  */
 public class CreateChromosomeLocationsProcess extends PostProcessor
 {
-    // SNP-related classes
+    // SNP-related classes - exclude all if too slow, for now only excluding SNV
     private static final ArrayList<String> SNPClasses = new ArrayList<String>(
         Arrays.asList("Deletion",
                       "Delins",
+                      "Indel",
                       "Insertion",
                       "MNV",
                       "SNV",
@@ -90,8 +92,7 @@ public class CreateChromosomeLocationsProcess extends PostProcessor
     public void postProcess()
             throws ObjectStoreException {
         // Instead of using built-in query, use custom version that's almost the same
-        // but excludes SNP and Indel here instead of looping through all of them
-        // to save time
+        // but excludes classes here to reduce the number of features being looped over
         //Results results = BioQueries.findLocationAndObjects(osw, Chromosome.class,
         //        SequenceFeature.class, true, false, false, 10000);
         Results results = findLocationAndObjects(osw, Chromosome.class, SequenceFeature.class, 10000);
@@ -194,14 +195,21 @@ public class CreateChromosomeLocationsProcess extends PostProcessor
         q.addToSelect(qcLoc);
         ConstraintSet cs = new ConstraintSet(ConstraintOp.AND);
 
-        // Exclude SNP-related classes:
-        for (String SNPclass : SNPClasses) {
-            // class != SNPclass
-            ClassDescriptor cld = os.getModel().getClassDescriptorByName(SNPclass); // string -> class
-            SimpleConstraint scCS = new SimpleConstraint(qfSubClass, ConstraintOp.NOT_EQUALS,
-                    new QueryValue(cld.getType()));
-            cs.addConstraint(scCS);
-        }
+        // Exclude all SNP-related classes (uncomment if postprocess is too slow)
+        //for (String SNPclass : SNPClasses) {
+        //    // class != SNPclass
+        //    ClassDescriptor cld = os.getModel().getClassDescriptorByName(SNPclass); // string -> class
+        //    SimpleConstraint scCS = new SimpleConstraint(qfSubClass, ConstraintOp.NOT_EQUALS,
+        //            new QueryValue(cld.getType()));
+        //    cs.addConstraint(scCS);
+        //}
+       
+        // Exclude SNV
+        ClassDescriptor cld = os.getModel().getClassDescriptorByName("SNV");
+        SimpleConstraint scCS = new SimpleConstraint(qfSubClass, ConstraintOp.NOT_EQUALS,
+                new QueryValue(cld.getType()));
+        cs.addConstraint(scCS);
+
         QueryObjectReference ref1 = new QueryObjectReference(qcLoc, "locatedOn");
         ContainsConstraint cc1 = new ContainsConstraint(ref1, ConstraintOp.CONTAINS, qcObj);
         cs.addConstraint(cc1);
