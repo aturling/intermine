@@ -58,10 +58,6 @@
     <class name="Polypeptide" extends="SequenceFeature" is-interface="true"/>
 
     <!--SNP-->
-    <class name="Deletion" extends="SequenceAlteration" is-interface="true"/>
-    <class name="Delins" extends="SequenceAlteration" is-interface="true"/>
-    <class name="Insertion" extends="SequenceAlteration" is-interface="true"/>
-    <class name="MNV" extends="SequenceAlteration" is-interface="true"/>
     <class name="SequenceAlteration" extends="SequenceFeature" is-interface="true"/>
     <class name="SNV" extends="SequenceAlteration" is-interface="true"/>
 

@@ -19,14 +19,7 @@ import java.util.Set;
 import org.intermine.bio.util.BioQueries;
 import org.intermine.bio.util.PostProcessUtil;
 import org.intermine.model.bio.Chromosome;
-import org.intermine.model.bio.Deletion;
-import org.intermine.model.bio.Delins;
-import org.intermine.model.bio.Indel;
-import org.intermine.model.bio.Insertion;
 import org.intermine.model.bio.Location;
-import org.intermine.model.bio.MNV;
-import org.intermine.model.bio.SequenceAlteration;
-import org.intermine.model.bio.SequenceFeature;
 import org.intermine.model.bio.SNV;
 import org.intermine.objectstore.ObjectStoreException;
 import org.intermine.objectstore.ObjectStoreWriter;
@@ -64,16 +57,6 @@ import org.intermine.objectstore.query.SimpleConstraint;
  */
 public class CreateChromosomeLocationsProcess extends PostProcessor
 {
-    // SNP-related classes - exclude all if too slow, for now only excluding SNV
-    private static final ArrayList<String> SNPClasses = new ArrayList<String>(
-        Arrays.asList("Deletion",
-                      "Delins",
-                      "Indel",
-                      "Insertion",
-                      "MNV",
-                      "SNV",
-                      "SequenceAlteration"));
-
     /**
      * Create a new instance
      *
@@ -195,15 +178,6 @@ public class CreateChromosomeLocationsProcess extends PostProcessor
         q.addToSelect(qcLoc);
         ConstraintSet cs = new ConstraintSet(ConstraintOp.AND);
 
-        // Exclude all SNP-related classes (uncomment if postprocess is too slow)
-        //for (String SNPclass : SNPClasses) {
-        //    // class != SNPclass
-        //    ClassDescriptor cld = os.getModel().getClassDescriptorByName(SNPclass); // string -> class
-        //    SimpleConstraint scCS = new SimpleConstraint(qfSubClass, ConstraintOp.NOT_EQUALS,
-        //            new QueryValue(cld.getType()));
-        //    cs.addConstraint(scCS);
-        //}
-       
         // Exclude SNV
         ClassDescriptor cld = os.getModel().getClassDescriptorByName("SNV");
         SimpleConstraint scCS = new SimpleConstraint(qfSubClass, ConstraintOp.NOT_EQUALS,
