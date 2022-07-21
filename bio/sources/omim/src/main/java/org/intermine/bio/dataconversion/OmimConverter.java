@@ -54,7 +54,7 @@ public class OmimConverter extends BioDirectoryConverter
     protected IdResolver rslv = null;
     private static final String OMIM_TXT_FILE = "mimTitles.txt";
     private static final String MORBIDMAP_FILE = "morbidmap.txt";
-    private static final String PUBMED_FILE = "pubmed_cited";
+    private static final String PUBMED_FILE = "pubmed_cited.txt";
     // An asterisk (*) before an entry number indicates a gene.
     private static final String GENE_ENTRY = "Asterisk";
     private static final String GENE_PHENOTYPE_ENTRY = "Plus";

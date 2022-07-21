@@ -138,7 +138,11 @@ public class EnsemblComparaConverter extends BioFileConverter
         Iterator<String[]> lineIter = FormattedTextParser.parseTabDelimitedReader(reader);
         while (lineIter.hasNext()) {
             String[] line = lineIter.next();
-            if (line.length < NUM_COLS && StringUtils.isNotEmpty(line.toString())) {
+            if (StringUtils.isBlank(String.join("", line))) {
+                // skip blank lines
+                continue;
+            }
+            if (line.length < NUM_COLS) {
                 throw new RuntimeException("Invalid line: " + Arrays.toString(line) + ", should be " + NUM_COLS
                         + " columns but is '" + line.length + "' instead" );
             }
