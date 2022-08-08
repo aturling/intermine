@@ -391,7 +391,7 @@
           <input type="radio" name="joinType" value="inner" id="inner" <c:if test="${joinType == 'inner'}">checked</c:if>/>
           <label for="inner">&nbsp;
             <fmt:message key="query.innerJoin">
-              <fmt:param value="${imf:formatPathStr(dec.path.path.secondLastClassDescriptor.unqualifiedName, INTERMINE_API, WEBCONFIG)}"/>
+              <fmt:param value="${imf:formatPathStrPlural(dec.path.path.secondLastClassDescriptor.unqualifiedName, INTERMINE_API, WEBCONFIG)}"/>
               <fmt:param value="${imf:formatPathStr(dec.path.path.lastClassDescriptor.unqualifiedName, INTERMINE_API, WEBCONFIG)}"/>
             </fmt:message>
             <img border="0" src="images/join_inner.png" width="13" height="13" title="Inner join"/>
@@ -401,8 +401,8 @@
           <input type="radio"  name="joinType" value="outer" id="outer" <c:if test="${joinType == 'outer'}">checked</c:if>/>
           <label for="outer">&nbsp;
             <fmt:message key="query.outerJoin">
-              <fmt:param value="${imf:formatPathStr(dec.path.path.secondLastClassDescriptor.unqualifiedName, INTERMINE_API, WEBCONFIG)}"/>
-              <fmt:param value="${imf:formatPathStr(dec.path.path.lastClassDescriptor.unqualifiedName, INTERMINE_API, WEBCONFIG)}"/>
+              <fmt:param value="${imf:formatPathStrPlural(dec.path.path.secondLastClassDescriptor.unqualifiedName, INTERMINE_API, WEBCONFIG)}"/>
+              <fmt:param value="${imf:formatPathStrPlural(dec.path.path.lastClassDescriptor.unqualifiedName, INTERMINE_API, WEBCONFIG)}"/>
             </fmt:message>
             <img border="0" src="images/join_outer.png" width="13" height="13" title="Outer join"/>
           </label>

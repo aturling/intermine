@@ -61,6 +61,15 @@ import org.intermine.web.logic.session.SessionMethods;
 public abstract class WebUtil
 {
     protected static final Logger LOG = Logger.getLogger(WebUtil.class);
+    private static final HashMap<String, String> pluralExceptions = new HashMap<String, String>();
+
+    static {
+        // Exceptions to plural 'add s to end of word" rule for our classes:
+        pluralExceptions.put("Analysis", "Analyses");
+        pluralExceptions.put("BioEntity", "BioEntities");
+        pluralExceptions.put("Delins", "Delinses");
+        pluralExceptions.put("Ontology", "Ontologies");
+    }
 
     private WebUtil() {
         // don't
@@ -387,6 +396,29 @@ public abstract class WebUtil
             return pathString;
         }
         return formatPath(viewPath, webConfig);
+    }
+
+    /**
+     * Same as formatPath() above but handles some cases where
+     * plural isn't simply '-s' suffix (kind of hacky for now
+     * until this is handled in a better way)
+     *
+     * @param pathString
+     *            A string representing a path to format
+     * @param api
+     *            the webapp configuration to aquire a model from
+     * @param webConfig
+     *            The configuration to find labels in
+     * @return A formatted column name in plural form
+     */
+    public static String formatPathPlural(final String pathString,
+            final InterMineAPI api, final WebConfig webConfig) {
+        String formattedPath = formatPath(pathString, api, webConfig);
+
+        if (pluralExceptions.containsKey(formattedPath)) {
+            return pluralExceptions.get(formattedPath);
+        }
+        return formattedPath + "s";
     }
 
     /**

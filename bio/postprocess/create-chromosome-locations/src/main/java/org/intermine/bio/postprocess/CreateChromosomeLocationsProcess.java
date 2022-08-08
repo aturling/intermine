@@ -20,6 +20,7 @@ import org.intermine.bio.util.BioQueries;
 import org.intermine.bio.util.PostProcessUtil;
 import org.intermine.model.bio.Chromosome;
 import org.intermine.model.bio.Location;
+import org.intermine.model.bio.SequenceFeature;
 import org.intermine.model.bio.SNV;
 import org.intermine.objectstore.ObjectStoreException;
 import org.intermine.objectstore.ObjectStoreWriter;
