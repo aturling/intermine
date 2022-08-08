@@ -19,15 +19,24 @@
       var fullSelectedClassName = jQuery("#queryClassSelector").val();
       var selectedClassName =
           fullSelectedClassName.substring(fullSelectedClassName.lastIndexOf('.')+1);
+      // Hide hint if no definition exists (don't display "undefined")
+      var displayHint = false;
       if (selectedClassName.length > 0) {
           var helpText = helpMap[selectedClassName];
-          document.getElementById('queryClassSelect').innerHTML =
-              selectedClassName + ":  " + helpText;
-          document.getElementById('classSelectDiv').style.display = 'block';
+          if (typeof helpText !== 'undefined') {
+              displayHint = true;
+              document.getElementById('queryClassSelect').innerHTML =
+                  selectedClassName + ":  " + helpText;
+          }
           jQuery('#submitClassSelect').attr('disabled', false);
       } else {
-          jQuery('#classSelectDiv').hide();
           jQuery('#submitClassSelect').attr('disabled', true);
+      }
+
+      if (displayHint) {
+          document.getElementById('classSelectDiv').style.display = 'block';
+      } else {
+          jQuery('#classSelectDiv').hide();
       }
   }
 
@@ -39,7 +48,7 @@
 
   window.onload = function() {
       jQuery('#queryClassSelector').click(function(e){
-		handleClassClick(e);
+                handleClassClick(e);
       });
       jQuery('#submitClassSelect').attr('disabled', true);
       

@@ -35,10 +35,12 @@
     </div>
   </c:if>
   <div id="header">
-    <a href="${WEB_PROPERTIES['project.sitePrefix']}" alt="Home" rel="NOFOLLOW"><img id="logo" src="model/images/logo.png" width="45px" height="43px" alt="Logo" /></a>
-    <h1><html:link href="${WEB_PROPERTIES['project.sitePrefix']}/"><c:out value="${WEB_PROPERTIES['project.title']}" escapeXml="false"/></html:link></h1>
+    <c:if test="${WEB_PROPERTIES['branding.images.displayLogo'] == 'true'}">
+      <a href="${WEB_PROPERTIES['project.sitePrefix']}" alt="Home" rel="NOFOLLOW"><img id="logo" src="${WEB_PROPERTIES['branding.images.logo']}" width="45px" height="43px" alt="Logo" /></a>
+    </c:if>
+    <h1><html:link href="${WEB_PROPERTIES['project.sitePrefix']}/"><c:out value="${WEB_PROPERTIES['project.titlefancy']}" escapeXml="false"/></html:link></h1>
     <p id="version"><fmt:message key="header.version"/> <c:out value="${WEB_PROPERTIES['project.releaseVersion']}" escapeXml="false"/></span>
-    <p><c:out value="${WEB_PROPERTIES['project.subTitle']}" escapeXml="false"/></p>
+    <p>&nbsp;&nbsp;&nbsp;<c:out value="${WEB_PROPERTIES['project.subTitle']}" escapeXml="false"/></p>
   </div>
 
     <!-- Tab Menu -->
@@ -48,6 +50,11 @@
       <li id="home" <c:if test="${tab == 'begin'}">class="activelink"</c:if>>
         <a href="/${WEB_PROPERTIES['webapp.path']}/begin.do">
           <fmt:message key="menu.begin"/>
+        </a>
+      </li>
+      <li id="mymine"  <c:if test="${tab == 'mymine'}">class="activelink"</c:if>>
+        <a href="/${WEB_PROPERTIES['webapp.path']}/mymine.do">
+          <span><fmt:message key="menu.mymine"/></span>
         </a>
       </li>
       <li id="templates"  <c:if test="${tab == 'templates'}">class="activelink"</c:if>>
@@ -77,14 +84,14 @@
           <fmt:message key="menu.dataCategories"/>
         </a>
       </li>
+      <li id="Help"  <c:if test="${tab == 'Help'}">class="activelink"</c:if>>
+        <a href="" target="_blank">
+          <fmt:message key="menu.help"/>
+        </a>
+      </li>
       <li id="api"  <c:if test="${tab == 'api'}">class="activelink"</c:if>>
         <a href="/${WEB_PROPERTIES['webapp.path']}/api.do">
           <fmt:message key="menu.api"/>
-        </a>
-      </li>
-      <li id="mymine"  <c:if test="${tab == 'mymine'}">class="activelink"</c:if>>
-        <a href="/${WEB_PROPERTIES['webapp.path']}/mymine.do">
-          <span><fmt:message key="menu.mymine"/></span>
         </a>
       </li>
     </ul>

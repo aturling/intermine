@@ -21,7 +21,7 @@
 
 
 <html:xhtml/>
-
+<div><p><u><b>Please contact us if you would like any additional template queries or if you have a concern about a query not completing.</u></b></p></div>
 <im:boxarea titleImage="templates-64.png" titleKey="menu.templates" stylename="gradientbox" minWidth="800px" htmlId="templatetop">
 <div style="">
 <fmt:message key="templates.intro"/>

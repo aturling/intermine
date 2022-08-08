@@ -86,8 +86,6 @@
     });
 </script>
 
-
-
 <div id="tool_bar_item_display" style="display:none;width:100px" class="tool_bar_item">
     <html:link anchor="relatedTemplates" action="bagDetails?bagName=${bag.name}">Related templates</html:link><br/>
     <html:link anchor="widgets" action="bagDetails?bagName=${bag.name}">Related widgets</html:link>
@@ -191,7 +189,6 @@
 
 <div id="clearLine">&nbsp;</div>
 
-
 <div style="clear:both">
 
 <%-- Bag Description --%>
@@ -237,8 +234,7 @@
 </TD>
 
 <c:if test="${!invalid}">
-    <TD align="left" valign="top" width="40%">
-
+    <TD align="left" valign="top" width="30%">
 
     <!-- closing toolbar div -->
 
@@ -253,7 +249,6 @@
       </html:form>
 </c:if>
 <c:if test="${!invalid}">
-
 
     <%-- BagDisplayers --%>
       <html:form action="/modifyBagDetailsAction">
@@ -295,6 +290,13 @@
   </c:forEach>
   </ol>
   <div style="clear:both"></div>
+</div>
+
+<div class="body">
+  <p><span class="bigmessage"><font color="#a51b00">Important Notes for Enrichment Widgets to avoid false positives:</font></span></p>
+  <p>1. If your gene list contains genes from more than one gene set, it is critical that you create new lists for each specific gene set and then redo the analyses separately by clicking the newly saved lists on your List View page. You can filter the table above for a particular gene set using the histogram icon above the Gene Source column in the table above. Then "Save as List".</p>
+  <p>2. After you save the new list, you need to click on the list name (either shown at the top of this page or in your List View page), in order for the enrichments to be recalculated.</p>
+  <p>3. You should change the background population from the default to one of the available gene sets or your own background gene list.</p><br>
 </div>
 
 <script language="javascript">
@@ -341,7 +343,6 @@
 <div class="heading">
    <a id="relatedTemplates">Template results for '${bag.name}' &nbsp;</a>
   </div>
-
 
   <div class="body">
   <fmt:message key="bagDetails.templatesHelp"/>
