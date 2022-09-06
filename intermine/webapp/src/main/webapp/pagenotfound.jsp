@@ -15,9 +15,8 @@
   <ul>
     <li>going to the home page</li>
     <li>using the quicksearch</li>
-    <li>or Contact us at support [at] flymine.org</li>
+    <li>or contact us using the link below. </li>
   </ul>
 </div>
-<img border="0" src="model/images/progress1.gif" title="Sorry..."/>
 
 <!-- /pagenotfound.jsp -->
