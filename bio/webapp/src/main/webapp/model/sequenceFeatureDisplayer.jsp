@@ -148,7 +148,7 @@
               <td colspan="4">
             </c:otherwise>
           </c:choose>
-            <%-- No location information in ${WEB_PROPERTIES['project.title']} --%>
+            No location information in ${WEB_PROPERTIES['project.title']}
         </c:otherwise>
       </c:choose>
     </td>
