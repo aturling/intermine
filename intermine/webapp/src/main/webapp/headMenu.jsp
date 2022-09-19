@@ -95,22 +95,23 @@
           <fmt:message key="menu.dataCategories"/>
         </a>
       </li>
-      <li id="Help"  <c:if test="${tab == 'Help'}">class="activelink"</c:if>>
-        <a href="https://hymenoptera-intermine.readthedocs.io/en/v1.6/" target="_blank">
+      <li id="Help" <c:if test="${tab == 'Help'}">class="activelink"</c:if>>
+        <a href="${WEB_PROPERTIES['project.helpLocation']}" target="_blank">
           <fmt:message key="menu.help"/>
         </a>
       </li>
-      <li id="api"  <c:if test="${tab == 'api'}">class="activelink"</c:if>>
+      <li id="api" <c:if test="${tab == 'api'}">class="activelink"</c:if>>
         <a href="/${WEB_PROPERTIES['webapp.path']}/api.do">
           <fmt:message key="menu.api"/>
         </a>
       </li>
-      </li>
-      <li id="blast"  <c:if test="${tab == 'blast'}">class="activelink"</c:if>>
-        <a href="http://sequence-server.rnet.missouri.edu/hgd-sequenceserver" target="_blank">
-          <fmt:message key="menu.blast"/>
-        </a>
-      </li>
+      <c:if test="${WEB_PROPERTIES['blast.display'] == 'true'}">
+        <li id="blast" <c:if test="${tab == 'blast'}">class="activelink"</c:if>>
+          <a href="${WEB_PROPERTIES['blast.url']}" target="_blank">
+            <fmt:message key="menu.blast"/>
+          </a>
+        </li>
+      </c:if>
     </ul>
   <ul id="loginbar">
         <li><a href="#" onclick="showContactForm();return false;"><fmt:message key="feedback.link"/></a></li>
