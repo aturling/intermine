@@ -92,7 +92,7 @@ public class ReactomeConverter extends BioFileConverter
                 // invalid organism
                 continue;
             }
-            Item pathway = getPathway(pathwayIdentifier, pathwayName, taxonId);
+            Item pathway = getPathway(pathwayIdentifier, pathwayName, taxonId, uri);
 
             Item protein = getProtein(accession, taxonId);
             protein.addToCollection("pathways", pathway);
@@ -132,12 +132,14 @@ public class ReactomeConverter extends BioFileConverter
     }
 
 
-    private Item getPathway(String pathwayId, String pathwayName, String taxonId) throws ObjectStoreException {
+    private Item getPathway(String pathwayId, String pathwayName, String taxonId, String url) 
+        throws ObjectStoreException {
         Item item = pathways.get(pathwayId);
         if (item == null) {
             item = createItem("Pathway");
             item.setAttribute("identifier", pathwayId);
             item.setAttribute("name", pathwayName);
+            item.setAttribute("url", url);
             item.setReference("organism", getOrganism(taxonId));
             pathways.put(pathwayId, item);
         }

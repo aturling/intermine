@@ -15,6 +15,7 @@
      <attribute name="name" type="java.lang.String" term="http://www.w3.org/2000/01/rdf-schema#label"/>
      <attribute name="shortName" type="java.lang.String"/>
      <attribute name="curated" type="java.lang.Boolean"/>
+     <attribute name="url" type="java.lang.String"/>
      <reference name="organism" referenced-type="Organism"/>
      <collection name="genes" referenced-type="Gene" reverse-reference="pathways"/>
      <collection name="proteins" referenced-type="Protein"/>

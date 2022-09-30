@@ -35,7 +35,7 @@ import org.intermine.xml.full.ReferenceList;
 /**
  * DataConverter to load Pathways and link them to Genes.
  * Modified from original to make more generic (variable data source, data set title),
- * use ID Resolver for fly only, and add Pathway.url field.
+ * and add Pathway.url field and Pathway.source fields.
  * Set prop file name, data source name, and data set title in child class
  * (e.g., KeggPathwayDataConverter for KEGG).
  *
@@ -49,12 +49,12 @@ public class KeggPathwayConverter extends BioFileConverter
     private Map<String, String[]> config = new HashMap<String, String[]>();
     private Set<String> taxonIds = new HashSet<String>();
     private String urlPrefix = null;
+    private String source = null;
 
     protected Map<String, String> pathwayIdentifiers = new HashMap<String, String>();
     protected Map<String, Item> pathwaysNotStored = new HashMap<String, Item>();
 
-    private static final String FLY = "7227";
-    protected IdResolver rslv;
+    //protected IdResolver rslv;
 
     /**
      * Constructor
@@ -63,6 +63,9 @@ public class KeggPathwayConverter extends BioFileConverter
      */
     public KeggPathwayConverter(ItemWriter writer, Model model, String dataSourceName, String dataSetTitle) {
         super(writer, model, dataSourceName, dataSetTitle);
+
+        // Set pathway source
+        this.source = dataSourceName;
     }
 
     /**
@@ -130,10 +133,11 @@ public class KeggPathwayConverter extends BioFileConverter
         Iterator<?> lineIter = FormattedTextParser.parseTabDelimitedReader(reader);
         File currentFile = getCurrentFile();
 
-        // init resolver (fly genes only)
-        if (rslv == null) {
-            rslv = IdResolverService.getFlyIdResolver();
-        }
+        // init resolver
+        // not using
+        //if (rslv == null) {
+        //    rslv = IdResolverService.getFlyIdResolver();
+        //}
 
         while (lineIter.hasNext()) {
             String[] line = (String[]) lineIter.next();
@@ -207,19 +211,19 @@ public class KeggPathwayConverter extends BioFileConverter
         String identifier = null;
 
         String taxonId = config.get(organism)[0];
-        // Only use ID resolver for fly genes
-        if (FLY.equals(taxonId) && rslv != null && rslv.hasTaxon(taxonId)) {
-            int resCount = rslv.countResolutions(taxonId, geneCG);
-            if (resCount != 1) {
-                LOG.info("RESOLVER: failed to resolve gene to one identifier, ignoring gene: "
-                         + geneCG + " count: " + resCount + " Results: "
-                         + rslv.resolveId(taxonId, geneCG));
-                return null;
-            }
-            identifier = rslv.resolveId(taxonId, geneCG).iterator().next();
-        } else {
-            identifier = geneCG;
-        }
+        //if (rslv != null && rslv.hasTaxon(taxonId)) {
+        //    int resCount = rslv.countResolutions(taxonId, geneCG);
+        //    if (resCount != 1) {
+        //        LOG.info("RESOLVER: failed to resolve gene to one identifier, ignoring gene: "
+        //                 + geneCG + " count: " + resCount + " Results: "
+        //                 + rslv.resolveId(taxonId, geneCG));
+        //        return null;
+        //    }
+        //    identifier = rslv.resolveId(taxonId, geneCG).iterator().next();
+        //} else {
+        //    identifier = geneCG;
+        //}
+        identifier = geneCG;
 
         Item gene = geneItems.get(identifier);
         if (gene == null) {
@@ -254,9 +258,16 @@ public class KeggPathwayConverter extends BioFileConverter
             pathway = getPathway(identifier);
         }
         pathway.setAttribute("name", name);
-        pathway.setReference("organism", getOrganism(taxonId));
         if (StringUtils.isNotEmpty(description)) {
             pathway.setAttribute("description", description);
+        }
+        pathway.setReference("organism", getOrganism(taxonId));
+        if (StringUtils.isNotEmpty(urlPrefix)) {
+            // Append trailing slash if needed
+            String url = urlPrefix.endsWith("/") ? urlPrefix : urlPrefix + "/";
+            // Append pathway identifier
+            url += identifier;
+            pathway.setAttribute("url", url);
         }
         store(pathway);
     }
@@ -264,13 +275,6 @@ public class KeggPathwayConverter extends BioFileConverter
     private Item getPathway(String identifier) {
         Item item = createItem("Pathway");
         item.setAttribute("identifier", identifier);
-        if (StringUtils.isNotEmpty(urlPrefix)) {
-            // Append trailing slash if needed
-            String url = urlPrefix.endsWith("/") ? urlPrefix : urlPrefix + "/";
-            // Append pathway identifier
-            url += identifier;
-            item.setAttribute("url", url);
-        }
         pathwayIdentifiers.put(identifier, item.getIdentifier());
         return item;
     }
