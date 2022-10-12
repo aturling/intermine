@@ -1,26 +1,26 @@
-EXP	Inferred from Experiment	http://geneontology.org/page/exp-inferred-experiment
-HDA	Inferred from High Throughput Direct Assay	http://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Direct_Assay_(HDA)
-HEP	Inferred from High Throughput Expression Pattern	http://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Expression_Pattern_(HEP)
-HGI	Inferred from High Throughput Genetic Interaction	http://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Genetic_Interaction_(HGI)
-HMP	Inferred from High Throughput Mutant Phenotype	http://wiki.geneontology.org/index.php/Inferred_from_Hight_Throughput_Mutant_Phenotype_(HMP)
-HTP	Inferred from High Throughput Experiment	http://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Experiment_(HTP)
-IBA	Inferred from Biological aspect of Ancestor	http://geneontology.org/page/iba-inferred-biological-aspect-ancestor
-IBD	Inferred from Biological aspect of Descendant	http://geneontology.org/page/ibd-inferred-biological-aspect-descendent
-IC	Inferred by Curator	http://geneontology.org/page/ic-inferred-curator
-IDA	Inferred from Direct Assay	http://geneontology.org/page/ida-inferred-direct-assay
-IEA	Inferred from Electronic Annotation	http://geneontology.org/page/automatically-assigned-evidence-codes
-IEP	Inferred from Expression Pattern 	http://geneontology.org/page/iep-inferred-expression-pattern
-IGC	Inferred from Genomic Context	http://geneontology.org/page/igc-inferred-genomic-context
-IGI	Inferred from Genetic Interaction	http://geneontology.org/page/igi-inferred-genetic-interaction
-IKR	Inferred from Key Residues	http://geneontology.org/page/ikr-inferred-key-residues
-IMP	Inferred from Mutant Phenotype	http://geneontology.org/page/imp-inferred-mutant-phenotype
-IPI	Inferred from Physical Interaction	http://geneontology.org/page/ipi-inferred-physical-interaction
-IRD	Inferred from Rapid Divergence	http://geneontology.org/page/ird-inferred-rapid-divergence
-ISA	Inferred from Sequence Alignment	http://geneontology.org/page/isa-inferred-sequence-alignment
-ISM	Inferred from Sequence Model	http://geneontology.org/page/ism-inferred-sequence-model
-ISO	Inferred from Sequence Orthology	http://geneontology.org/page/iso-inferred-sequence-orthology
-ISS	Inferred from Sequence or structural Similarity	http://geneontology.org/page/iss-inferred-sequence-or-structural-similarity
-NAS	Non-traceable Author Statement	http://geneontology.org/page/nas-non-traceable-author-statement
-ND	No biological Data available 	http://geneontology.org/page/nd-no-biological-data-available
-RCA	Inferred from Reviewed Computational Analysis	http://geneontology.org/page/rca-inferred-reviewed-computational-analysis
-TAS	Traceable Author Statement	http://geneontology.org/page/tas-traceable-author-statement
+EXP	Inferred from Experiment	https://wiki.geneontology.org/index.php/Inferred_from_Experiment_(EXP)
+HDA	Inferred from High Throughput Direct Assay	https://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Direct_Assay_(HDA)
+HEP	Inferred from High Throughput Expression Pattern	https://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Expression_Pattern_(HEP)
+HGI	Inferred from High Throughput Genetic Interaction	https://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Genetic_Interaction_(HGI)
+HMP	Inferred from High Throughput Mutant Phenotype	https://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Mutant_Phenotype_(HMP)
+HTP	Inferred from High Throughput Experiment	https://wiki.geneontology.org/index.php/Inferred_from_High_Throughput_Experiment_(HTP)
+IBA	Inferred from Biological aspect of Ancestor	https://wiki.geneontology.org/index.php/Inferred_from_Biological_aspect_of_Ancestor_(IBA)
+IBD	Inferred from Biological aspect of Descendant	https://wiki.geneontology.org/index.php/Inferred_from_Biological_aspect_of_Descendant_(IBD)
+IC	Inferred by Curator	https://wiki.geneontology.org/index.php/Inferred_by_Curator_(IC)
+IDA	Inferred from Direct Assay	https://wiki.geneontology.org/index.php/Inferred_from_Direct_Assay_(IDA)
+IEA	Inferred from Electronic Annotation	https://wiki.geneontology.org/index.php/Inferred_from_Electronic_Annotation_(IEA)
+IEP	Inferred from Expression Pattern 	https://wiki.geneontology.org/index.php/Inferred_from_Expression_Pattern_(IEP)
+IGC	Inferred from Genomic Context	https://wiki.geneontology.org/index.php/Inferred_from_Genomic_Context_(IGC)
+IGI	Inferred from Genetic Interaction	https://wiki.geneontology.org/index.php/Inferred_from_Genetic_Interaction_(IGI)
+IKR	Inferred from Key Residues	https://wiki.geneontology.org/index.php/Inferred_from_Key_Residues_(IKR)
+IMP	Inferred from Mutant Phenotype	https://wiki.geneontology.org/index.php/Inferred_from_Mutant_Phenotype_(IMP)
+IPI	Inferred from Physical Interaction	https://wiki.geneontology.org/index.php/Inferred_from_Physical_Interaction_(IPI)
+IRD	Inferred from Rapid Divergence	https://wiki.geneontology.org/index.php/Inferred_from_Rapid_Divergence(IRD)
+ISA	Inferred from Sequence Alignment	https://wiki.geneontology.org/index.php/Inferred_from_Sequence_Alignment_(ISA)
+ISM	Inferred from Sequence Model	https://wiki.geneontology.org/index.php/Inferred_from_Sequence_Model_(ISM)
+ISO	Inferred from Sequence Orthology	https://wiki.geneontology.org/index.php/Inferred_from_Sequence_Orthology_(ISO)
+ISS	Inferred from Sequence or structural Similarity	https://wiki.geneontology.org/index.php/Inferred_from_Sequence_or_structural_Similarity_(ISS)
+NAS	Non-traceable Author Statement	https://wiki.geneontology.org/index.php/Non-traceable_Author_Statement_(NAS)
+ND	No biological Data available 	https://wiki.geneontology.org/index.php/No_biological_Data_available_(ND)_evidence_code
+RCA	Inferred from Reviewed Computational Analysis	https://wiki.geneontology.org/index.php/Inferred_from_Reviewed_Computational_Analysis_(RCA)
+TAS	Traceable Author Statement	https://wiki.geneontology.org/index.php/Traceable_Author_Statement_(TAS)
