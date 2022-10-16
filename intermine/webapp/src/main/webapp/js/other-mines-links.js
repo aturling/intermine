@@ -32,7 +32,7 @@ var OtherMines = (function ($, _, AjaxServices) {
     function handleError (message, e) {
       $loading.remove();
       $('.apology', $context).show();
-      console.error(message, e);
+      //console.error(message, e);
     }
 
     function display (results) {
