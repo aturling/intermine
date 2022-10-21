@@ -194,6 +194,7 @@ public class GenomicRegionSearchService
         long featureTypeSoTermTime = 0;
         long orgToTaxonTime = 0;
         long orgFullNamesTime = 0;
+        long orgAssemblyFeaturesTime = 0;
         long buildJSONStrTime = 0;
         if (orgFeatureJSONString == null) {
             List<String> excludedFeatureTypes = getExcludedFeatureTypes();
@@ -222,7 +223,11 @@ public class GenomicRegionSearchService
             orgFullNamesTime = System.currentTimeMillis() - stepTime;
 
             stepTime = System.currentTimeMillis();
-            orgFeatureJSONString = buildJSONString(orgList, orgFeatureTypes, orgAssemblyVersions, orgFullNames);
+            Map<String, Map<String, Set<String>>> orgAssemblyFeatures = getAssemblyFeaturesForOrgs(orgList, excludedFeatureTypes);
+            orgAssemblyFeaturesTime = System.currentTimeMillis() - stepTime;
+
+            stepTime = System.currentTimeMillis();
+            orgFeatureJSONString = buildJSONString(orgList, orgFeatureTypes, orgAssemblyVersions, orgFullNames, orgAssemblyFeatures);
             buildJSONStrTime = System.currentTimeMillis() - stepTime;
         }
         LOG.info("REGION SEARCH INIT total time: " + (System.currentTimeMillis() - startTime)
@@ -233,6 +238,7 @@ public class GenomicRegionSearchService
                 + "getFeatureTypeToSOTermMap: " + featureTypeSoTermTime + "ms, "
                 + "getOrganismToTaxonMap: " + orgToTaxonTime + "ms, "
                 + "getFullNamesForOrgs: " + orgFullNamesTime + "ms, "
+                + "getAssemblyFeaturesForOrgs: " + orgAssemblyFeaturesTime + "ms, "
                 + "buildJSONString: " + buildJSONStrTime + "ms.");
         return orgFeatureJSONString;
     }
@@ -367,6 +373,84 @@ public class GenomicRegionSearchService
         return orgFeatureMap;
     }
 
+    private Map<String, Map<String, Set<String>>> getAssemblyFeaturesForOrgs(List<String> orgList,
+        List<String> excludedFeatureTypes) {
+        Map<String, Map<String, Set<String>>> orgAssemblyFeaturesMap = new LinkedHashMap<String, Map<String, Set<String>>>();
+
+        Query q = new Query();
+        q.setDistinct(true);
+
+        QueryClass qcChr = new QueryClass(Chromosome.class);
+        QueryClass qcOrg = new QueryClass(Organism.class);
+        QueryClass qcFeature = new QueryClass(SequenceFeature.class);
+
+        QueryField qfOrgName = new QueryField(qcOrg, "shortName");
+        QueryField qfChrAassembly = new QueryField(qcChr, "assembly");
+        QueryField qfFeatureClass = new QueryField(qcFeature, "class");
+
+        q.addToSelect(qfOrgName);
+        q.addToSelect(qfChrAassembly);
+        q.addToSelect(qfFeatureClass);
+
+        q.addFrom(qcOrg);
+        q.addFrom(qcChr);
+        q.addFrom(qcFeature);
+
+        q.addToOrderBy(qfOrgName, "ascending");
+        q.addToOrderBy(qfFeatureClass, "ascending");
+
+        ConstraintSet constraints = new ConstraintSet(ConstraintOp.AND);
+        q.setConstraint(constraints);
+
+        // SequenceFeature.organism = Organism
+        QueryObjectReference organism = new QueryObjectReference(qcFeature,
+                "organism");
+        ContainsConstraint ccOrg = new ContainsConstraint(organism,
+                ConstraintOp.CONTAINS, qcOrg);
+        constraints.addConstraint(ccOrg);
+
+        // SequenceFeature.chromosome = Chromosome
+        QueryObjectReference chromosome = new QueryObjectReference(qcFeature, "chromosome");
+        ContainsConstraint ccChr = new ContainsConstraint(chromosome, ConstraintOp.CONTAINS, qcChr);
+        constraints.addConstraint(ccChr);
+
+        Results results = objectStore.execute(q, initBatchSize, true, true, true);
+
+        if (results != null && results.size() > 0) {
+            for (Iterator<?> iter = results.iterator(); iter.hasNext(); ) {
+                ResultsRow<?> row = (ResultsRow<?>) iter.next();
+
+                // 0) Organism
+                // 1) Assembly
+                // 2) Feature type
+                String org = (String) row.get(0);
+                String assembly = (String) row.get(1);
+                String featureType = ((Class) row.get(2)).getSimpleName();
+
+                if (!"Chromosome".equals(featureType) && orgList.contains(org)
+                    && (excludedFeatureTypes == null || !excludedFeatureTypes.contains(featureType))) {
+                    if (!orgAssemblyFeaturesMap.containsKey(org)) {
+                        // Haven't seen this organism yet
+                        // Need to initialize map of assembly -> features
+                        Map<String, Set<String>> assembliesFeaturesMap = new LinkedHashMap<String, Set<String>>();
+                        orgAssemblyFeaturesMap.put(org, assembliesFeaturesMap);
+                    }
+                    // Check whether we've seen this assembly yet
+                    if (orgAssemblyFeaturesMap.get(org).keySet() != null && 
+                        !(orgAssemblyFeaturesMap.get(org).keySet().contains(assembly))) {
+                        // Haven't seen this assembly yet
+                        // Need to initialize features set for this assembly
+                        Set<String> featureSet = new HashSet<String>();
+                        orgAssemblyFeaturesMap.get(org).put(assembly, featureSet);
+                    }
+                    // Add assembly -> features map
+                    orgAssemblyFeaturesMap.get(org).get(assembly).add(featureType);
+                }
+            }
+        }
+        return orgAssemblyFeaturesMap;
+    }
+
     private Map<String, Set<String>> getAssemblyVersionsForOrgs(List<String> orgList) {
         Map<String, Set<String>> orgAssemblyMap = new LinkedHashMap<String, Set<String>>();
 
@@ -417,17 +501,19 @@ public class GenomicRegionSearchService
 
     // build JSON string to display region search options
     private String buildJSONString(List<String> orgList, Map<String, Set<String>> resultsMap, 
-        Map<String, Set<String>> orgAssemblyMap, Map<String, String> orgFullNameMap) {
+        Map<String, Set<String>> orgAssemblyMap, Map<String, String> orgFullNameMap,
+        Map<String, Map<String, Set<String>>> orgAssemblyFeaturesMap) {
         // Parse data to JSON string
         List<Object> ft = new ArrayList<Object>(); // feature types
         List<Object> oa = new ArrayList<Object>(); // organisms-assemblies
-        List<Object> gb = new ArrayList<Object>(); // genome builds
+        //List<Object> gb = new ArrayList<Object>(); // genome builds - not used in our mines
         List<Object> fn = new ArrayList<Object>(); // full names
+        List<Object> af = new ArrayList<Object>(); // assemblies-features
         Map<String, Object> ma = new LinkedHashMap<String, Object>();
 
         for (Entry<String, Set<String>> e : resultsMap.entrySet()) {
             Map<String, Object> mft = new LinkedHashMap<String, Object>();
-            Map<String, Object> mgb = new LinkedHashMap<String, Object>();
+            //Map<String, Object> mgb = new LinkedHashMap<String, Object>();
 
             mft.put("organism", e.getKey());
 
@@ -461,16 +547,16 @@ public class GenomicRegionSearchService
 
             ft.add(mft);
 
-            mgb.put("organism", e.getKey());
-            mgb.put("genomeBuild",
-                    (OrganismGenomeBuildLookup
-                            .getGenomeBuildbyOrgansimAbbreviation(e.getKey()) == null)
-                            ? "not available"
-                            : OrganismGenomeBuildLookup
-                                    .getGenomeBuildbyOrgansimAbbreviation(e
-                                            .getKey()));
-
-            gb.add(mgb);
+            //mgb.put("organism", e.getKey());
+            //mgb.put("genomeBuild",
+            //        (OrganismGenomeBuildLookup
+            //                .getGenomeBuildbyOrgansimAbbreviation(e.getKey()) == null)
+            //                ? "not available"
+            //                : OrganismGenomeBuildLookup
+            //                        .getGenomeBuildbyOrgansimAbbreviation(e
+            //                                .getKey()));
+            //
+            //gb.add(mgb);
         }
 
         for (Entry<String, Set<String>> e : orgAssemblyMap.entrySet()) {
@@ -491,11 +577,34 @@ public class GenomicRegionSearchService
             fn.add(msn);
         }
 
+        for (String org : orgAssemblyFeaturesMap.keySet()) {
+            Map<String, Object> assemblyFeaturesEntry = new LinkedHashMap<String, Object>();
+            assemblyFeaturesEntry.put("organism", org);
+
+            Map<String, Set<String>> orgAssemblyFeatures = orgAssemblyFeaturesMap.get(org);
+            ArrayList<Object> assemblyList = new ArrayList<Object>();
+
+            for (Entry<String, Set<String>> e : orgAssemblyFeatures.entrySet()) {
+                Map<String, Object> assemblyFeatures = new LinkedHashMap<String, Object>();
+                assemblyFeatures.put("assembly", e.getKey());
+
+                ArrayList<String> features = new ArrayList<String>();
+                for (String v : e.getValue()) {
+                    features.add(v);
+                }
+                assemblyFeatures.put("features", features);
+                assemblyList.add(assemblyFeatures);
+            }
+            assemblyFeaturesEntry.put("assemblies", assemblyList);
+            af.add(assemblyFeaturesEntry);
+        }
+        
         ma.put("organisms", orgList);
         ma.put("assemblies", oa);
-        ma.put("genomeBuilds", gb);
+        //ma.put("genomeBuilds", gb);
         ma.put("featureTypes", ft);
         ma.put("fullnames", fn);
+        ma.put("assemblies_features", af);
         JSONObject jo = new JSONObject(ma);
 
         // Note: JSONObject toString will replace \' to \\', so don't convert it before the method
