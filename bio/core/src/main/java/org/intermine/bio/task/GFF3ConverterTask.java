@@ -54,6 +54,7 @@ public class GFF3ConverterTask extends Task
 
     private boolean dontCreateLocations = false;
     private boolean loadDuplicateEntities = false;
+    private boolean loadSequenceAlterations = false;
 
      /**
      * Set the data fileset
@@ -115,6 +116,18 @@ public class GFF3ConverterTask extends Task
             this.loadDuplicateEntities = true;
         } else {
             this.loadDuplicateEntities = false;
+        }
+    }
+
+    /**
+     * Set whether to load Sequence Alterations as flank markers
+     * @param loadSequenceAlterations whether to load Sequence Alterations
+     */
+    public void setLoadSequenceAlterations(String loadSequenceAlterations) {
+        if ("true".equalsIgnoreCase(loadSequenceAlterations)) {
+            this.loadSequenceAlterations = true;
+        } else {
+            this.loadSequenceAlterations = false;
         }
     }
 
@@ -270,6 +283,9 @@ public class GFF3ConverterTask extends Task
             }
             if (loadDuplicateEntities) {
                 gff3converter.setLoadDuplicateEntities(loadDuplicateEntities);
+            }
+            if (loadSequenceAlterations) {
+                gff3converter.setLoadSequenceAlterations(loadSequenceAlterations);
             }
 
             for (int i = 0; i < files.length; i++) {
