@@ -89,7 +89,7 @@ public class GoConverter extends BioFileConverter
     private static final Logger LOG = Logger.getLogger(GoConverter.class);
     private static final String GO_ANNOTATION_NAME = "GO Annotation";
     private static final String FIELD_EMPTY_SYMBOL = ".";
-    private String geneSource = null;
+    private boolean loadPublications = true;
 
     /**
      * Constructor
@@ -123,6 +123,15 @@ public class GoConverter extends BioFileConverter
      */
     public void setDatasource(String datasource) {
         this.datasource = datasource;
+    }
+
+    public void setLoadPublications(String loadPublications) {
+        System.out.println("Setting loadPublications to " + loadPublications);
+        if ("true".equalsIgnoreCase(loadPublications)) {
+            this.loadPublications = true;
+        } else {
+            this.loadPublications = false;
+        }
     }
 
     private String setDefaultDatasource() throws ObjectStoreException {
@@ -287,8 +296,11 @@ public class GoConverter extends BioFileConverter
             // null if resolver could not resolve an identifier
             if (productIdentifier != null) {
 
-                // null if no pub found
-                String pubRefId = newPublication(array[5]);
+                // null if no pub found or not loading pubs
+                String pubRefId = null;
+                if (loadPublications) {
+                    pubRefId = newPublication(array[5]);
+                }
 
                 // get evidence codes for this goterm|gene pair
                 Set<Evidence> allEvidenceForAnnotation = goTermGeneToEvidence.get(key);
