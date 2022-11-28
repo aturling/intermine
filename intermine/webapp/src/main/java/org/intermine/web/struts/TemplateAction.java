@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -71,6 +72,8 @@ import org.intermine.webservice.server.template.result.TemplateResultLinkGenerat
  */
 public class TemplateAction extends InterMineAction
 {
+    protected static final Logger LOG = Logger.getLogger(TemplateAction.class);
+
     /** Name of skipBuilder parameter **/
     public static final String SKIP_BUILDER_PARAMETER = "skipBuilder";
 
@@ -368,7 +371,12 @@ public class TemplateAction extends InterMineAction
                         }
                     } else {
                         String[] ops = (String[]) tf.getAttributeOps(key);
-                        String op = ops[0];
+                        // A little hacky; sometimes ops is null for templates w/optional filters, not sure why
+                        // but this seems to get around it for now
+                        String op = null;
+                        if (ops != null) {
+                            op = ops[0];
+                        }
                         if (op == null) {
                             if (c instanceof PathConstraintLookup) {
                                 value = new TemplateValue(c, ConstraintOp.LOOKUP,
