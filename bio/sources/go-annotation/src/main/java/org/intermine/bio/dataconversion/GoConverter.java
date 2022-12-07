@@ -265,6 +265,7 @@ public class GoConverter extends BioFileConverter
             if (array.length >= 16) {
                 annotationExtension = fieldValue(array[15]);
             }
+
             if (StringUtils.isNotEmpty(strEvidence)) {
                 if (!evidenceCodes.containsKey(strEvidence)) {
                     throw new IllegalArgumentException("Evidence code is `" + strEvidence
@@ -306,7 +307,8 @@ public class GoConverter extends BioFileConverter
                 Set<Evidence> allEvidenceForAnnotation = goTermGeneToEvidence.get(key);
 
                 // new evidence
-                if (allEvidenceForAnnotation == null || !StringUtils.isEmpty(withText)) {
+                //if (allEvidenceForAnnotation == null || !StringUtils.isEmpty(withText)) {
+                if (allEvidenceForAnnotation == null) {
                     String goTermIdentifier = newGoTerm(goId, dataSetTitle);
                     Evidence evidence = new Evidence(strEvidence, pubRefId, withText, organism,
                             dataSetTitle);
@@ -386,11 +388,12 @@ public class GoConverter extends BioFileConverter
                 // with objects
                 if (!StringUtils.isEmpty(evidence.withText)) {
                     goevidence.setAttribute("withText", evidence.withText);
-                    List<String> with = createWithObjects(evidence.withText, evidence.organism,
-                            evidence.dataSetTitle);
-                    if (!with.isEmpty()) {
-                        goevidence.addCollection(new ReferenceList("with", with));
-                    }
+                    // change made 12/6/22: don't actually create the entities from the with text
+                    //List<String> with = createWithObjects(evidence.withText, evidence.organism,
+                    //        evidence.dataSetTitle);
+                    //if (!with.isEmpty()) {
+                    //    goevidence.addCollection(new ReferenceList("with", with));
+                    //}
                 }
 
                 store(goevidence);
@@ -754,6 +757,24 @@ public class GoConverter extends BioFileConverter
             if (publicationRefId != null) {
                 publicationRefIds.add(publicationRefId);
             }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String toString() {
+            StringBuffer toStringBuff = new StringBuffer();
+
+            toStringBuff.append("Evidence: evidence code=");
+            toStringBuff.append(evidenceCode);
+            toStringBuff.append(", storedAnnotationId=");
+            toStringBuff.append(storedAnnotationId);
+            toStringBuff.append(", withText=");
+            toStringBuff.append(withText);
+            toStringBuff.append(", pubRefIds=");
+            toStringBuff.append(String.join(";", publicationRefIds));
+            return toStringBuff.toString();
         }
 
         protected List<String> getPublications() {
