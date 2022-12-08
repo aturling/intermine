@@ -215,6 +215,7 @@ public class EntrezPublicationsRetriever
                 thisBatch.add(pubMedIdInteger);
                 if (thisBatch.size() == BATCH_SIZE || !idIter.hasNext() && thisBatch.size() > 0) {
                     try {
+                        LOG.info("Processing new batch");
                         // the server may return less publications than we ask for, so keep a Map
                         Map<String, Map<String, Object>> fromServerMap = null;
 
@@ -357,6 +358,9 @@ public class EntrezPublicationsRetriever
          * e-mail: norbert.auer@boku.ac.at
          */
 
+        // See: https://github.com/intermine/intermine/issues/2196
+        Thread.sleep(500);
+
         String urlString = ESUMMARY_URL;
         if (loadFullRecord) {
             urlString = EFETCH_URL;
@@ -388,6 +392,7 @@ public class EntrezPublicationsRetriever
         wr.close();
 
         int responseCode = con.getResponseCode();
+        LOG.info("Eutils response code: " + responseCode);
 
         return new BufferedReader(new InputStreamReader(con.getInputStream()));
     }
