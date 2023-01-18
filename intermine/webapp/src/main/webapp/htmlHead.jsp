@@ -94,6 +94,7 @@ if(new java.io.File(application.getRealPath("/js")+"/"+pageName+".js").exists())
 </c:if>
 
 <c:set var="theme" value="${WEB_PROPERTIES['theme']}"/>
+<link rel="stylesheet" media="all" href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700" />
 <link rel="stylesheet" type="text/css" href="<html:rewrite page='/themes/${theme}/theme.css'/>"/>
 
 <!-- propagate cdn.location to runtime -->
