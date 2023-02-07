@@ -95,6 +95,13 @@
           <fmt:message key="menu.dataCategories"/>
         </a>
       </li>
+      <c:if test="${WEB_PROPERTIES['taxonomy.display'] == 'true'}">
+        <li id="ortho" <c:if test="${tab == 'taxonomy'}">class="activelink"</c:if>>
+          <a href="/${WEB_PROPERTIES['webapp.path']}/taxonomy.do">
+            <fmt:message key="menu.taxonomy"/>
+          </a>
+        </li>
+      </c:if>
       <li id="Help" <c:if test="${tab == 'Help'}">class="activelink"</c:if>>
         <a href="${WEB_PROPERTIES['project.helpLocation']}" target="_blank">
           <fmt:message key="menu.help"/>
