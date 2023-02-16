@@ -189,6 +189,12 @@ public class GenomicRegionSearchService
             }
         }
 
+        // Exclude these organisms, if specified in web.properties
+        Set<String> excludedOrganisms = getExcludedOrganisms();
+        if (excludedOrganisms != null) {
+            orgList.removeAll(excludedOrganisms);
+        }
+
         long orgFeatureTypesTime = 0;
         long orgAssemblyVersionsTime = 0;
         long featureTypeSoTermTime = 0;
@@ -255,6 +261,20 @@ public class GenomicRegionSearchService
             excludedFeatureTypes = Arrays.asList(excludedFeatureTypesProp.split("[, ]+"));
         }
         return excludedFeatureTypes;
+    }
+
+    // get a list of organisms excluded from region search based on a web property setting
+    private Set<String> getExcludedOrganisms() {
+        String excludedOrganismsProp = webProperties.getProperty(
+                "genomicRegionSearch.organismsExcluded");
+
+        Set<String> excludedOrganisms = new HashSet<String>();
+        if (excludedOrganismsProp == null || "".equals(excludedOrganismsProp)) {
+            excludedOrganisms = null;
+        } else {
+            excludedOrganisms = new HashSet<String>(Arrays.asList(excludedOrganismsProp.split(",\\s*")));
+        }
+        return excludedOrganisms;
     }
 
     // build a map of org short names to full names
