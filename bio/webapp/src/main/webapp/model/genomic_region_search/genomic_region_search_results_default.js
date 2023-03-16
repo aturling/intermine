@@ -149,7 +149,7 @@
 
         var from_index = (page_num - 1) * page_size; // the start index in the result map
         var to_index = page_num * page_size -1; // the end index in the result map
-        if (to_index > span_query_total_count)
+        if (to_index >= span_query_total_count)
             { to_index = span_query_total_count - 1;}
 
         if (is_all_queries_finished == true || (finishedQueryCount - 1) > to_index) {
