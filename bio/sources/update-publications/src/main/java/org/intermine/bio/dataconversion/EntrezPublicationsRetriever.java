@@ -84,7 +84,7 @@ public class EntrezPublicationsRetriever
     protected static final String ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/"
             + "eutils/esummary.fcgi";
     // number of records to retrieve per request
-    protected static final int BATCH_SIZE = 500;
+    protected static final int BATCH_SIZE = 200;
     // number of times to try the same batch from the server
     private static final int MAX_TRIES = 5;
     private String osAlias = null, outputFile = null;
