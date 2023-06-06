@@ -26,6 +26,7 @@ import org.intermine.metadata.Model;
 import org.intermine.model.InterMineObject;
 import org.intermine.model.bio.Gene;
 import org.intermine.model.bio.Organism;
+import org.intermine.model.bio.Transcript;
 import org.intermine.objectstore.ObjectStore;
 import org.intermine.metadata.ConstraintOp;
 import org.intermine.objectstore.query.ConstraintSet;
@@ -71,21 +72,26 @@ public final class GeneModelCache
      * @return a list of GeneModels, one per transcript or an empty list
      */
     public static List<GeneModel> getGeneModels(InterMineObject object, Model model) {
-        String clsName = DynamicUtil.getSimpleClass(object).getSimpleName();
+        //String clsName = DynamicUtil.getSimpleClass(object).getSimpleName();
+        Class objClass = DynamicUtil.getSimpleClass(object);
 
         // TODO make this deal with inheritance (transcripts and UTRs in on statement)
         // TODO handle UTRs better
         // TODO look up gene model components from GeneModel.TYPES
         Gene gene = null;
-        if ("Gene".equals(clsName)) {
-            gene = (Gene) object;
-        } else if ("Transcript".equals(clsName) || "MRNA".equals(clsName)
-                || "Exon".equals(clsName) || "UTR".equals(clsName) || "FivePrimeUTR".equals(clsName)
-                || "ThreePrimeUTR".equals(clsName)) {
 
+        // Adding inheritance checks:
+        //if ("Gene".equals(clsName)) {
+        if (DynamicUtil.isAssignableFrom(Gene.class, objClass)) {
+            gene = (Gene) object;
+        //} else if ("Transcript".equals(clsName) || "MRNA".equals(clsName)
+        //        || "Exon".equals(clsName) || "UTR".equals(clsName) || "FivePrimeUTR".equals(clsName)
+        //        || "ThreePrimeUTR".equals(clsName)) {
+        } else if (DynamicUtil.isAssignableFrom(Transcript.class, objClass)) {
             try {
                 gene = (Gene) object.getFieldValue("gene");
             } catch (IllegalAccessException e) {
+                String clsName = DynamicUtil.getSimpleClass(object).getSimpleName();
                 LOG.warn("Failed to get gene from " + clsName + ": " + object.getId());
             }
         }
