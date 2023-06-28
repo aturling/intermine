@@ -50,6 +50,7 @@ public class EnsemblComparaConverter extends BioFileConverter
     private Map<String, String> configs = new HashMap<String, String>();
     private static String evidenceRefId = null;
     private static final int NUM_COLS = 4; // expected number of columns in input files
+    private static final String HOMOLOGUE_SOURCE = "Ensembl Compara";
 
     /**
      * Constructor
@@ -192,6 +193,7 @@ public class EnsemblComparaConverter extends BioFileConverter
         //homologue.setAttribute("type", "homologue");
         homologue.setAttribute("lastCommonAncestor", ancestor);
         homologue.setAttribute("type", type);
+        homologue.setAttribute("source", HOMOLOGUE_SOURCE);
         store(homologue);
     }
 

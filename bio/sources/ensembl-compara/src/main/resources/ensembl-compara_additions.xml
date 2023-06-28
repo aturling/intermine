@@ -3,6 +3,7 @@
 <class name="Homologue" is-interface="true">
   <attribute name="lastCommonAncestor" type="java.lang.String"/>
   <attribute name="type" type="java.lang.String"/>
+  <attribute name="source" type="java.lang.String"/>
   <reference name="gene" referenced-type="Gene" reverse-reference="homologues"/>
   <reference name="homologue" referenced-type="Gene"/>
   <collection name="dataSets" referenced-type="DataSet"/>
