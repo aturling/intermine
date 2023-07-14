@@ -72,8 +72,8 @@ public final class GeneModelCache
      * @return a list of GeneModels, one per transcript or an empty list
      */
     public static List<GeneModel> getGeneModels(InterMineObject object, Model model) {
-        //String clsName = DynamicUtil.getSimpleClass(object).getSimpleName();
         Class objClass = DynamicUtil.getSimpleClass(object);
+        String clsName = objClass.getSimpleName();
 
         // TODO make this deal with inheritance (transcripts and UTRs in on statement)
         // TODO handle UTRs better
@@ -81,17 +81,18 @@ public final class GeneModelCache
         Gene gene = null;
 
         // Adding inheritance checks:
+        // Check for Gene or any child of Gene:
         //if ("Gene".equals(clsName)) {
         if (DynamicUtil.isAssignableFrom(Gene.class, objClass)) {
             gene = (Gene) object;
-        //} else if ("Transcript".equals(clsName) || "MRNA".equals(clsName)
-        //        || "Exon".equals(clsName) || "UTR".equals(clsName) || "FivePrimeUTR".equals(clsName)
-        //        || "ThreePrimeUTR".equals(clsName)) {
-        } else if (DynamicUtil.isAssignableFrom(Transcript.class, objClass)) {
+        // Check for these classes, plus any child of Transcript:
+        } else if ("Transcript".equals(clsName) || "MRNA".equals(clsName)
+                || "Exon".equals(clsName) || "UTR".equals(clsName) || "FivePrimeUTR".equals(clsName)
+                || "ThreePrimeUTR".equals(clsName) 
+                || DynamicUtil.isAssignableFrom(Transcript.class, objClass)) {
             try {
                 gene = (Gene) object.getFieldValue("gene");
             } catch (IllegalAccessException e) {
-                String clsName = DynamicUtil.getSimpleClass(object).getSimpleName();
                 LOG.warn("Failed to get gene from " + clsName + ": " + object.getId());
             }
         }
