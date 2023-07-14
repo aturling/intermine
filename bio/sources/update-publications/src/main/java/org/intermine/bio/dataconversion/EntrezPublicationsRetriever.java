@@ -84,7 +84,7 @@ public class EntrezPublicationsRetriever
     protected static final String ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/"
             + "eutils/esummary.fcgi";
     // number of records to retrieve per request
-    protected static final int BATCH_SIZE = 100;
+    protected static final int BATCH_SIZE = 200;
     // number of times to try the same batch from the server
     private static final int MAX_TRIES = 5;
     private String osAlias = null, outputFile = null;
@@ -163,6 +163,7 @@ public class EntrezPublicationsRetriever
             txn = env.beginTransaction(null, null);
 
             LOG.info("Starting EntrezPublicationsRetriever");
+            System.out.println("Batch size: " + BATCH_SIZE);
 
             Writer writer = new FileWriter(outputFile); // write to cache file
             ObjectStore os = ObjectStoreFactory.getObjectStore(osAlias);
@@ -359,7 +360,7 @@ public class EntrezPublicationsRetriever
          */
 
         // See: https://github.com/intermine/intermine/issues/2196
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         String urlString = ESUMMARY_URL;
         if (loadFullRecord) {
@@ -381,6 +382,7 @@ public class EntrezPublicationsRetriever
             urlParameters += "&api_key=" + entrezApiKey;
         }
         urlParameters += "&id=" + StringUtil.join(ids, ",");
+        LOG.info("ids: " + StringUtil.join(ids, ","));
         //String urlParameters = "tool=intermine&db=pubmed&rettype=abstract&retmode=xml&id="
         //        + StringUtil.join(ids, ",");
 
