@@ -37,6 +37,7 @@ public class FeedbackService extends JSONService
     @Override
     protected void execute() throws Exception {
         String from = getOptionalParameter("email");
+        String sender = webProperties.getProperty("mail.from");
         String feedback = getRequiredParameter("feedback");
         String destination = webProperties.getProperty("feedback.destination");
 
@@ -48,7 +49,8 @@ public class FeedbackService extends JSONService
             body = feedback;
         }
         try {
-            MailUtils.email(destination, "Feedback", body, from, webProperties);
+            //MailUtils.email(destination, "Feedback", body, from, webProperties);
+            MailUtils.email(destination, "Feedback", body, sender, webProperties);
         } catch (Exception ex) {
             LOG.error(ex.getMessage());
             throw new ServiceException("Error sending feedback.");
