@@ -59,15 +59,12 @@ public class ContactAction extends InterMineAction
 
             // final String user = webProperties.getProperty("mail.smtp.user");
             String from = ff.getMonkey();
-            String sender = webProperties.getProperty("mail.from");
             String subject = ff.getSubject();
             String body = MessageFormat.format(strings.getMessage("contact.template"),
                                 new Object[] {ff.getName(), ff.getMonkey(), ff.getMessage()});
             String dest = webProperties.getProperty("feedback.destination");
 
-            // Use "from" email that matches server hostname - don't use what was entered on the form
-            //MailUtils.email(dest, subject, body, from, webProperties);
-            MailUtils.email(dest, subject, body, sender, webProperties);
+            MailUtils.email(dest, subject, body, from, webProperties);
             recordMessage(new ActionMessage("contact.sent"), request);
 
             // avoid showing form

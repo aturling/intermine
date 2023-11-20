@@ -71,6 +71,8 @@ public abstract class MailUtils
         String smtpPort = webProperties.getProperty("mail.smtp.port");
         String authFlag = webProperties.getProperty("mail.smtp.auth");
         String starttlsFlag = webProperties.getProperty("mail.smtp.starttls.enable");
+        // Have emails sent from mail.from address, not user
+        String sender = webProperties.getProperty("mail.from");
 
         Properties properties = System.getProperties();
 
@@ -104,13 +106,19 @@ public abstract class MailUtils
             session = Session.getInstance(properties);
         }
         MimeMessage message = new MimeMessage(session);
-        if (StringUtils.isEmpty(user)) {
-            message.setFrom(new InternetAddress(from));
+        //if (StringUtils.isEmpty(user)) {
+        //    message.setFrom(new InternetAddress(from));
+        //} else {
+        //    if (from != null) {
+        //        message.setReplyTo(InternetAddress.parse(from, true));
+        //    }
+        //    message.setFrom(new InternetAddress(user));
+        //}
+        if (from != null) {
+            message.setFrom(new InternetAddress(sender));
+            message.setReplyTo(InternetAddress.parse(from, true));
         } else {
-            if (from != null) {
-                message.setReplyTo(InternetAddress.parse(from, true));
-            }
-            message.setFrom(new InternetAddress(user));
+            throw new MessagingException("From email is null");
         }
         message.addRecipient(Message.RecipientType.TO, InternetAddress.parse(to, true)[0]);
         message.setSubject(subject);
