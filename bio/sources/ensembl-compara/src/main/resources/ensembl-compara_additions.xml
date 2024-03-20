@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <classes>
 <class name="Homologue" is-interface="true">
+  <attribute name="confidence" type="java.lang.Float"/> 
   <attribute name="lastCommonAncestor" type="java.lang.String"/>
   <attribute name="type" type="java.lang.String"/>
   <attribute name="source" type="java.lang.String"/>

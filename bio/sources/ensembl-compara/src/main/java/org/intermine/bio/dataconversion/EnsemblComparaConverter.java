@@ -49,7 +49,7 @@ public class EnsemblComparaConverter extends BioFileConverter
     protected IdResolver rslv = null;
     private Map<String, String> configs = new HashMap<String, String>();
     private static String evidenceRefId = null;
-    private static final int NUM_COLS = 4; // expected number of columns in input files
+    private static final int NUM_COLS = 5; // expected number of columns in input files
     private static final String HOMOLOGUE_SOURCE = "Ensembl Compara";
 
     /**
@@ -152,6 +152,7 @@ public class EnsemblComparaConverter extends BioFileConverter
             String gene2 = line[1];
             String ancestor = line[2];
             String type = line[3];
+            String confidence = line[4]; 
 
             if (gene1.startsWith("Ensembl")) {
                 // skip header that biomart starts with
@@ -176,23 +177,28 @@ public class EnsemblComparaConverter extends BioFileConverter
             }
 
             // store homologues
-            processHomologue(refId1, refId2, ancestor, type);
-            processHomologue(refId2, refId1, ancestor, type);
+            processHomologue(refId1, refId2, ancestor, type, confidence);
+            // Don't store reverse direction - get from another file
+            // (type field differs)
+            //processHomologue(refId2, refId1, ancestor, type);
             lastGene1 = gene1;
             lastGene2 = gene2;
         }
     }
 
     // save homologue pair
-    private void processHomologue(String gene1, String gene2, String ancestor, String type)
+    private void processHomologue(String gene1, String gene2, String ancestor, 
+        String type, String confidence)
         throws ObjectStoreException {
         Item homologue = createItem("Homologue");
         homologue.setReference("gene", gene1);
         homologue.setReference("homologue", gene2);
         homologue.addToCollection("evidence", getEvidence());
-        //homologue.setAttribute("type", "homologue");
         homologue.setAttribute("lastCommonAncestor", ancestor);
+        // Get type from column in file:
+        //homologue.setAttribute("type", "homologue");
         homologue.setAttribute("type", type);
+        homologue.setAttribute("confidence", confidence);
         homologue.setAttribute("source", HOMOLOGUE_SOURCE);
         store(homologue);
     }
