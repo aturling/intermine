@@ -117,9 +117,11 @@ public class InterProConverter extends BioFileConverter
                 String dbkey = attrs.getValue("dbkey");
 //                String name = attrs.getValue("name");
                 String db = attrs.getValue("db");
-                // Change "PFAM" to "Pfam" to merge with source name in dbxref.txt
+                // Change "PFAM" to "Pfam" and "NCBIFAM" to "NCBIfam" to merge with source name in dbxref.txt
                 if ("PFAM".equals(db)) {
                     db = "Pfam";
+                } else if ("NCBIFAM".equals(db)) {
+                    db = "NCBIfam";
                 }
                 try {
                     Item item = createCrossReference(proteinDomain.getIdentifier(), dbkey,
