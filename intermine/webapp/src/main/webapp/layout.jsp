@@ -184,7 +184,7 @@ if (typeof imtables != 'undefined' && imtables.setMessages) {
     <c:set var="googleAnalyticsId" value="${WEB_PROPERTIES['google.analytics.id']}"/>
     <c:if test="${!empty googleAnalyticsId}">
         <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-36CEV12K1M"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}"></script>
         <script type="text/javascript">
           switch ("${userTracking}") {
             case "1":
