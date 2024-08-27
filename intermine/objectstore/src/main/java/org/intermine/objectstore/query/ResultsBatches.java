@@ -233,6 +233,7 @@ public class ResultsBatches
             try {
                 getBatch(0, optimise, explain);
             } catch (ObjectStoreException e) {
+                e.printStackTrace();
                 throw new RuntimeException("ObjectStore error has occurred in size()", e);
             }
             return size(optimise, explain);
