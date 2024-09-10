@@ -115,11 +115,13 @@ public class ReactomeConverter extends BioFileConverter
 
     private String getTaxonId(String organismName) {
         String[] bits = organismName.split(" ");
-        if (bits.length != 2) {
-            LOG.warn("Couldn't parse the organism name " + organismName);
-            return null;
+        OrganismData od = null;
+        if (bits.length == 2) {
+            od = OR.getOrganismDataByGenusSpecies(bits[0], bits[1]);
+        } else if (bits.length == 3 ) {
+            // Special case, use first and last:
+            od = OR.getOrganismDataByGenusSpecies(bits[0], bits[2]);
         }
-        OrganismData od = OR.getOrganismDataByGenusSpecies(bits[0], bits[1]);
         if (od == null) {
             LOG.warn("Couldn't parse the organism name " + organismName);
             return null;
