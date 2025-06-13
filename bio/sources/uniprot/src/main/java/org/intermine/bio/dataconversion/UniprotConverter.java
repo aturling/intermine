@@ -100,9 +100,11 @@ public class UniprotConverter extends BioDirectoryConverter
         OrganismRepository.getOrganismRepository();
     }
 
-    static {
-        GENE_PREFIXES.put("10116", "RGD:");
-    }
+    // We are not loading any RGD ids so this is not needed
+    // (in fact, it's prepending RGD to RefSeq ids which we don't want)
+    //static {
+    //    GENE_PREFIXES.put("10116", "RGD:");
+    //}
 
     /**
      * Initialize config before processing files
@@ -1035,7 +1037,8 @@ public class UniprotConverter extends BioDirectoryConverter
                 }
                 if (GENE_PREFIXES.containsKey(taxId)) {
                     // Prepend RGD:
-                    identifier = GENE_PREFIXES.get(taxId) + identifier;
+                    // not needed - see comment at static{} above
+                    //identifier = GENE_PREFIXES.get(taxId) + identifier;
                 }
                 gene = getGene(protein, uniprotEntry, identifier, taxId,
                         uniqueIdentifierField);
@@ -1059,7 +1062,8 @@ public class UniprotConverter extends BioDirectoryConverter
                         }
                         if (GENE_PREFIXES.containsKey(taxId)) {
                             // Prepend RGD:
-                            geneIdentifier = GENE_PREFIXES.get(taxId) + geneIdentifier;
+                            // not needed - see comment at static{} above
+                            //geneIdentifier = GENE_PREFIXES.get(taxId) + geneIdentifier;
                         }
 
                         if ("primaryIdentifier".equals(geneField)) {
