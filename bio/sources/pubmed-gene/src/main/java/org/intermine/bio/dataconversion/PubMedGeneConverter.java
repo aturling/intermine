@@ -41,6 +41,7 @@ public class PubMedGeneConverter extends BioFileConverter
     protected IdResolver rslv;
     private Map<String, Item> genes = new HashMap<String, Item>();
     private String geneSource = null;
+    private String geneType = null;
     private static final String FLY = "7227";
 
     /**
@@ -59,6 +60,15 @@ public class PubMedGeneConverter extends BioFileConverter
     public void setGeneSource(String geneSource) {
         System.out.println("Setting gene source to " + geneSource);
         this.geneSource = geneSource;
+    }
+
+    /**
+     * Sets whether to create gene/pseudogene
+     * @param geneType gene type
+     */
+    public void setGeneType(String geneType) {
+        System.out.println("Setting gene type to " + geneType);
+        this.geneType = geneType;
     }
 
     /**
@@ -81,6 +91,10 @@ public class PubMedGeneConverter extends BioFileConverter
 
         if (StringUtils.isEmpty(geneSource)) {
             throw new RuntimeException("Gene source not set in project.xml");
+        }
+
+        if (StringUtils.isEmpty(geneType)) {
+            throw new RuntimeException("Gene type (gene/pseudogene) not set in project.xml");
         }
 
         if (rslv == null) {
@@ -155,7 +169,7 @@ public class PubMedGeneConverter extends BioFileConverter
         }
         Item gene = genes.get(resolvedIdentifier);
         if (gene == null) {
-            gene = createItem("Gene");
+            gene = createItem(geneType);
             gene.setAttribute("primaryIdentifier", resolvedIdentifier);
             gene.setAttribute("source", geneSource);
             gene.setReference("organism", getOrganism(taxonId));
