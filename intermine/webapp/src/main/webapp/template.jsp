@@ -229,7 +229,14 @@
                 <select name="attributeOptions(${index})" id="attributeOptions(${index})" onchange="updateAttributeValues(${index});">
                   <c:forEach items="${dec.possibleValues}" var="option">
                       <option value="${option}" <c:if test="${dec.selectedValue == option}">selected</c:if>>
-                      <c:out value="${option}" /></option>
+                      <c:choose>
+                        <c:when test="${fn:length(option) > 150}">
+                          <c:out value="${fn:substring(option,0,150)}"/>&hellip;
+                        </c:when>
+                        <c:otherwise>
+                          <c:out value="${option}"/>
+                        </c:otherwise>
+                      </c:choose>
                     </c:forEach>
                 </select>
               </c:if>
