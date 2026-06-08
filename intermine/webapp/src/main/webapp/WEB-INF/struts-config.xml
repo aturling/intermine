@@ -23,7 +23,6 @@
     <form-bean name="buildBagForm" type="org.intermine.web.struts.BuildBagForm"/>
     <form-bean name="bagUploadConfirmForm" type="org.intermine.web.struts.BagUploadConfirmForm"/>
     <form-bean name="requestPasswordForm" type="org.intermine.web.struts.RequestPasswordForm"/>
-    <form-bean name="contactForm" type="org.intermine.web.struts.ContactForm"/>
     <form-bean name="importTemplatesForm" type="org.intermine.web.struts.TemplatesImportForm"/>
     <form-bean name="importTagsForm" type="org.intermine.web.struts.ImportTagsForm"/>
     <form-bean name="importQueriesForm" type="org.intermine.web.struts.ImportQueriesForm"/>
@@ -70,8 +69,6 @@
     <action path="/classDescription" forward="classDescription.page">
     </action>
     <action path="/login" forward="login.page" name="loginForm" validate="false">
-    </action>
-    <action path="/contact" forward="contact.page">
     </action>
     <action path="/contextHelp" forward="contextHelp.page">
     </action>
@@ -272,9 +269,6 @@
       <forward name="importQueries" path="importQueries.page"/>
       <forward name="query" redirect="true" path="/query.do"/>
       <forward name="mymine" redirect="true" path="/mymine.do"/>
-    </action>
-    <action path="/contactAction" name="contactForm" type="org.intermine.web.struts.ContactAction" scope="request" input="contact">
-      <forward name="contact" path="contact.page"/>
     </action>
     <action path="/modifyQuery" name="modifyQueryForm" type="org.intermine.web.struts.ModifyQueryAction" scope="request" input="history" parameter="action">
       <forward name="mymine" redirect="true" path="/mymine.do"/>
