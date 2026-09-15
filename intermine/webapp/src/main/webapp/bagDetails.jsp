@@ -148,10 +148,6 @@
 
 <div class="results collection-table nomargin">
 
-<style type="text/css">
-    .bag-detail-table { max-width: 1000px; }
-</style>
-
 <%-- Table displaying bag elements --%>
 <tiles:insert name="resultsTable.tile">
      <tiles:put name="pagedResults" beanName="pagedResults" />
@@ -232,9 +228,12 @@
     </c:if>
 
 </TD>
+</TR>
+<TR>
+<!--move modifiers to next row, hide external links-->
 
 <c:if test="${!invalid}">
-    <TD align="left" valign="top" width="30%">
+    <TD align="left" valign="top">
 
     <!-- closing toolbar div -->
 
@@ -262,14 +261,7 @@
     </div>
 
 
-    <!-- link outs -->
-    <div id="linkOuts" class="listtoolbox" align="left">
-        <p>
-    <tiles:insert name="attributeLinks.tile">
-        <tiles:put name="bag" beanName="bag" />
-    </tiles:insert>
-    </p>
-    </div>
+    <!-- link outs were here, now not displaying -->
 
     </TD>
 </c:if>
